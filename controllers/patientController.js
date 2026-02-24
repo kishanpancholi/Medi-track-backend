@@ -2,7 +2,17 @@ import Patient from "../models/Patient.js";
 
 export const registerPatient = async (req, res) => {
   try {
-    const { fname, lname, gender, dob, mobile, email, address, password, confirmPassword } = req.body;
+    const {
+      fname,
+      lname,
+      gender,
+      dob,
+      mobile,
+      email,
+      address,
+      password,
+      confirmPassword,
+    } = req.body;
 
     const exists = await Patient.findOne({ email });
     if (exists) {
@@ -18,11 +28,10 @@ export const registerPatient = async (req, res) => {
       email,
       address,
       password,
-      confirmPassword
+      confirmPassword,
     });
 
     res.status(201).json({ msg: "Patient registered successfully!", patient });
-
   } catch (error) {
     res.status(500).json({ msg: "Server error", error });
   }

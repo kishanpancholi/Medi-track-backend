@@ -6,18 +6,21 @@ import patientRoutes from "./routes/patientRoutes.js";
 
 const app = express();
 
+//middleware
 app.use(cors());
 app.use(express.json());
 
-const dbURI = "mongodb+srv://kishan:test123@cluster0.s4imkal.mongodb.net/healthcare?appName=Cluster0";
-mongoose.connect(dbURI)
+//database connection
+const dbURI =
+  "mongodb+srv://kishan:test123@cluster0.s4imkal.mongodb.net/healthcare?appName=Cluster0";
+mongoose
+  .connect(dbURI)
   .then((result) => app.listen(5000))
   .catch((err) => console.log("DB Connection Error:", err));
 
-//middleware
+//routes
 app.use("/api/patient", patientRoutes);
 
-//routes
 app.get("/", (req, res) => {
   res.send("Healthcare Backend Running...");
 });

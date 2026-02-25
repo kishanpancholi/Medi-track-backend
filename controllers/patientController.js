@@ -11,7 +11,6 @@ export const registerPatient = async (req, res) => {
       email,
       address,
       password,
-      confirmPassword,
     } = req.body;
 
     const exists = await Patient.findOne({ email });
@@ -28,7 +27,6 @@ export const registerPatient = async (req, res) => {
       email,
       address,
       password,
-      confirmPassword,
     });
 
     res.status(201).json({ msg: "Patient registered successfully!", patient });

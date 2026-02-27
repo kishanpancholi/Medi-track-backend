@@ -2,7 +2,7 @@ import Doctor from "../models/Doctor.js";
 
 export const registerDoctor = async (req, res) => {
   try {
-    console.log("Doctor Form Data:", req.body);
+    // console.log("Doctor Form Data:", req.body);//this line is printing the submitted data in terminal 
     const {
       fullName,
       gender,

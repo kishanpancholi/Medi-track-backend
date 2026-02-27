@@ -24,7 +24,7 @@ mongoose
 
 //routes
 app.use("/api/Patient", patientRoutes);
-app.use("/api/doctor", doctorRoutes);
+app.use("/api/Doctor", doctorRoutes);
 
 app.get("/", (req, res) => {
   res.send("Healthcare Backend Running...");

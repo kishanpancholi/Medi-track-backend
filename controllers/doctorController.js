@@ -38,3 +38,26 @@ export const registerDoctor = async (req, res) => {
     res.status(500).json({ msg: "Server error", error: error.message });
   }
 };
+
+//Doctor login 
+export const loginDoctor = async (req,res) => {
+  try{
+    const {email, password} = req.body;
+
+    const doc = await Doctor.findOne({email});
+
+    if(!doc){
+      return res.status(400).json({message:"Email Not Registerd"});
+    }
+    if (doc.password !== password) {
+      return res.status(400).json({ message: "Incorrect Password" });
+    }
+
+    res.status(200).json({
+      message: "Login Successful",
+      doc,
+    });
+  }catch (err) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};

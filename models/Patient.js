@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const patientSchema = new mongoose.Schema(
   {
-    fname: { type: String, required: true },
-    lname: { type: String, required: true },
+    fname: { type: String, required: true, trim:true},
+    lname: { type: String, required: true, trim:true},
     gender: { type: String, required: true },
     dob: { type: String, required: true },
     mobile: { type: String, required: true },

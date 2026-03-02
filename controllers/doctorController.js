@@ -1,4 +1,6 @@
 import Doctor from "../models/Doctor.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export const registerDoctor = async (req, res) => {
   try {
@@ -20,6 +22,10 @@ export const registerDoctor = async (req, res) => {
       return res.status(400).json({ msg: "Email already registered" });
     }
 
+    //hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const doctor = await Doctor.create({
       fullName,
       gender,
@@ -30,7 +36,7 @@ export const registerDoctor = async (req, res) => {
       email,
       address,
       username,
-      password,
+      password: hashedPassword,
     });
 
     res.status(201).json({ msg: "Doctor registered successfully!", doctor });
@@ -49,13 +55,27 @@ export const loginDoctor = async (req,res) => {
     if(!doc){
       return res.status(400).json({message:"Email Not Registerd"});
     }
-    if (doc.password !== password) {
+
+    const isMatch = await bcrypt.compare(password, doc.password);
+    if(!isMatch){
       return res.status(400).json({ message: "Incorrect Password" });
     }
+    // if (doc.password !== password) {
+    //   return res.status(400).json({ message: "Incorrect Password" });
+    // }
+
+
+    //create a json token
+    const token = jwt.sign(
+      {id:user._id},
+      "secretkey123",
+      {expiresIn: "id"},
+    );
 
     res.status(200).json({
       message: "Login Successful",
       doc,
+      token,
     });
   }catch (err) {
     res.status(500).json({ message: "Server Error" });

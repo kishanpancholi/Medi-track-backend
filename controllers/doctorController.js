@@ -67,9 +67,9 @@ export const loginDoctor = async (req,res) => {
 
     //create a json token
     const token = jwt.sign(
-      {id:user._id},
+      {id:doc._id},
       "secretkey123",
-      {expiresIn: "id"},
+      {expiresIn: "1d"},
     );
 
     res.status(200).json({

@@ -12,11 +12,9 @@ app.use(cors());
 app.use(express.json());
 
 //database connection
-const dbURI =
-  "mongodb+srv://kishan:test123@cluster0.s4imkal.mongodb.net/healthcare?appName=Cluster0";
+  // "mongodb+srv://kishan:test123@cluster0.s4imkal.mongodb.net/healthcare?appName=Cluster0";
 
-// const dbURI = "mongodb://127.0.0.1:27017/healthcare";
-
+const dbURI = "mongodb://127.0.0.1:27017/healthcare";
 mongoose
   .connect(dbURI)
   .then((result) => app.listen(5000))

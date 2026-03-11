@@ -9,7 +9,7 @@ export const registerPatient = async (req, res) => {
 
     const exists = await Patient.findOne({ email });
     if (exists) {
-      return res.status(400).json({ msg: "Email already registered" });
+      return res.status(400).json({ msg: "Email Already Registered" });
     }
 
     //hash password
@@ -27,9 +27,9 @@ export const registerPatient = async (req, res) => {
       password: hashedPassword, // this is use for storing the hase password in DB
     });
 
-    res.status(201).json({ msg: "Patient registered successfully!", patient });
+    res.status(201).json({ msg: "Patient Registered Successfully!", patient });
   } catch (error) {
-    res.status(500).json({ msg: "Server error", error });
+    res.status(500).json({ msg: "SERVER ERROR", error });
   }
 };
 
@@ -41,7 +41,7 @@ export const loginPatient = async (req, res) => {
     const user = await Patient.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ message: "Email not registered" });
+      return res.status(400).json({ message: "Email Not Registered" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password); // in here bcypt takes enter password hash that password again and match that password with stored hash password in DB if match then continue otherwise give
@@ -68,3 +68,4 @@ export const loginPatient = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+

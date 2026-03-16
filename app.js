@@ -1,5 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();// .env file ne load karse
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import patientRoutes from "./routes/patientRoutes.js";
@@ -22,4 +23,4 @@ app.get("/", (req, res) => {
   res.send("Healthcare Backend Running...");
 });
 
-app.listen(5000);
+app.listen(process.env.PORT);

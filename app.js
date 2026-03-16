@@ -3,8 +3,10 @@ dotenv.config();// .env file ne load karse
 import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
-import patientRoutes from "./routes/patientRoutes.js";
-import doctorRoutes from "./routes/doctorRoutes.js";
+import routes from "./routes/index.js";
+
+//database connection
+connectDB();
 
 const app = express();
 
@@ -12,12 +14,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-//database connection
-connectDB();
-
-//routes
-app.use("/api/Patient", patientRoutes);
-app.use("/api/Doctor", doctorRoutes);
+routes(app);
 
 app.get("/", (req, res) => {
   res.send("Healthcare Backend Running...");

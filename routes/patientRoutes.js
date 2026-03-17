@@ -1,5 +1,5 @@
 import express from "express";
-import { registerPatient, loginPatient} from "../controllers/patientController.js";
+import { registerPatient, loginPatient } from "../controllers/patientController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import Patient from "../models/Patient.js";
 
@@ -7,7 +7,7 @@ const router = express.Router();
 
 //Register & Login
 router.post("/register", registerPatient);
-router.post("/login",loginPatient); 
+router.post("/login", loginPatient);
 
 //Profile
 router.get("/profile", protect, async (req, res) => {
@@ -17,12 +17,12 @@ router.get("/profile", protect, async (req, res) => {
 
 //Add Count
 router.get("/count", async (req, res) => {
-  try {
-    const totalPatients = await Patient.countDocuments();
-    res.json({ totalPatients });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+   try {
+      const totalPatients = await Patient.countDocuments();
+      res.json({ totalPatients });
+   } catch (error) {
+      res.status(500).json({ error: error.message });
+   }
 });
 
 export default router;  

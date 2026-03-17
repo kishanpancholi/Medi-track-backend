@@ -1,5 +1,5 @@
 import express from "express";
-import { registerPatient, loginPatient } from "../controllers/patientController.js";
+import { registerPatient, loginPatient, getGender } from "../controllers/patientController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import Patient from "../models/Patient.js";
 
@@ -24,5 +24,7 @@ router.get("/count", async (req, res) => {
       res.status(500).json({ error: error.message });
    }
 });
+
+router.get("/gender-count",getGender);
 
 export default router;  

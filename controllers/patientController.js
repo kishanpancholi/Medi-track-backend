@@ -68,3 +68,19 @@ export const loginPatient = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+//show male & female chart in doctot dashboard
+export const getGender = async (req,res) => {
+  try{
+    const maleCount = await Patient.countDocuments({gender:"male"});
+    const femaleCount = await Patient.countDocuments({gender:"female"});
+  
+  res.status(200).json({
+    male: maleCount,
+    female: femaleCount,
+  });
+
+  }catch(error){
+    res.status(500).json({message:"Server Error"});
+  }
+};

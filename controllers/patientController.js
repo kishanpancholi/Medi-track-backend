@@ -55,7 +55,7 @@ export const loginPatient = async (req, res) => {
     // After login we create token:
     const token = jwt.sign(
       { id: user._id },
-      "secretkey123",//JWT secrat key and Digitally sign the token
+      process.env.JWT_SECRET,//JWT secrat key and Digitally sign the token
       { expiresIn: "1d" },
     );
 

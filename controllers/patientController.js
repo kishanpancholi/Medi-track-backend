@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 export const registerPatient = async (req, res) => {
   try {
-    const { fname, lname, gender, dob, mobile, email, address, password } =
+    const { firstName, lastName, gender, dob, mobile, email, address, password } =
       req.body;
 
     const exists = await Patient.findOne({ email });
@@ -17,8 +17,8 @@ export const registerPatient = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt); // it is conver the plain password into the secure hashing password
 
     const patient = await Patient.create({
-      fname,
-      lname,
+      firstName,
+      lastName,
       gender,
       dob,
       mobile,

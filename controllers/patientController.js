@@ -59,7 +59,14 @@ export const loginPatient = async (req, res) => {
       { expiresIn: "1d" },
     );
 
-    res.status(200).json({
+    res
+    .cookie("token", token,{
+      httpOnly: true,
+      secure: false,
+      maxAge: 24 * 60 * 60* 1000,// cookie valid for the 1 day
+    })
+    
+    .status(200).json({
       message: "Login Successful",
       token,
       user,
@@ -69,18 +76,3 @@ export const loginPatient = async (req, res) => {
   }
 };
 
-//show male & female chart in doctot dashboard
-export const getGender = async (req,res) => {
-  try{
-    const maleCount = await Patient.countDocuments({gender:"male"});
-    const femaleCount = await Patient.countDocuments({gender:"female"});
-  
-  res.status(200).json({
-    male: maleCount,
-    female: femaleCount,
-  });
-
-  }catch(error){
-    res.status(500).json({message:"Server Error"});
-  }
-};

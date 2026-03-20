@@ -4,6 +4,7 @@ import express from "express";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import routes from "./routes/index.js";
+import cookieParser from "cookie-parser";
 
 //database connection
 connectDB();
@@ -11,8 +12,13 @@ connectDB();
 const app = express();
 
 //middleware
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true,
+})
+);
 app.use(express.json());
+app.use(cookieParser());
 
 routes(app);
 

@@ -60,17 +60,21 @@ export const loginDoctor = async (req,res) => {
     if(!isMatch){
       return res.status(400).json({ message: "Incorrect Password" });
     }
-    // if (doc.password !== password) {
-    //   return res.status(400).json({ message: "Incorrect Password" });
-    // }
-
 
     //create a json token
     const token = jwt.sign(
       {id:doc._id},
-      "secretkey123",
+      process.env.JWT_SECRET,
       {expiresIn: "1d"},
     );
+
+   //STORE TOKEN IN COOKIE
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: FontFaceSetLoadEvent, // true in production (HTTPS)
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
 
     res.status(200).json({
       message: "Login Successful",
@@ -80,4 +84,14 @@ export const loginDoctor = async (req,res) => {
   }catch (err) {
     res.status(500).json({ message: "Server Error" });
   }
+};
+
+export const logoutDoctor = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false, // true in production
+  });
+
+  res.status(200).json({ message: "Logout successful" });
 };

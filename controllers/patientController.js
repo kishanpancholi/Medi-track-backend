@@ -73,6 +73,7 @@ export const loginPatient = async (req, res) => {
       user,
     });
   } catch (err) {
+    console.log("error",err);
     res.status(500).json({ message: "Server Error" });
   }
 };

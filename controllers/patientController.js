@@ -60,9 +60,10 @@ export const loginPatient = async (req, res) => {
     );
 
     res
-    .cookie("token", token,{
+    .cookie("patientToken", token,{
       httpOnly: true,
       secure: false,
+      sameSite: "lax",
       maxAge: 24 * 60 * 60* 1000,// cookie valid for the 1 day
     })
     
@@ -76,3 +77,12 @@ export const loginPatient = async (req, res) => {
   }
 };
 
+export const logoutPatient = (req, res) => {
+  res.clearCookie("patientToken", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false, // true in production
+  });
+
+  res.status(200).json({ message: "Logout successful" });
+};

@@ -71,7 +71,7 @@ export const loginDoctor = async (req,res) => {
    //STORE TOKEN IN COOKIE
     res.cookie("token", token, {
       httpOnly: true,
-      secure: FontFaceSetLoadEvent, // true in production (HTTPS)
+      secure: false, // true in production (HTTPS)
       sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });

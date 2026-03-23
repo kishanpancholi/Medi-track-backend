@@ -1,5 +1,5 @@
 import express from "express";
-import { registerPatient, loginPatient, logoutPatient} from "../controllers/patientController.js";
+import { registerPatient, loginPatient, getPatientCount, logoutPatient} from "../controllers/patientController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import Patient from "../models/Patient.js";
 
@@ -23,14 +23,7 @@ router.get("/profile", protect, (req, res) => {
   });
 });
 
-//Add Count
-router.get("/count", async (req, res) => {
-   try {
-      const totalPatients = await Patient.countDocuments();
-      res.json({ totalPatients });
-   } catch (error) {
-      res.status(500).json({ error: error.message });
-   }
-});
+// Add count
+router.get("/count", getPatientCount);
 
 export default router;  

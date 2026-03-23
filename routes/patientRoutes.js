@@ -1,6 +1,6 @@
 import express from "express";
 import { registerPatient, loginPatient, logoutPatient} from "../controllers/patientController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protectPatient } from "../middleware/authMiddleware.js";
 import Patient from "../models/Patient.js";
 
 const router = express.Router();
@@ -16,9 +16,9 @@ router.post("/logout", logoutPatient);
 //    res.json(user);
 // });
 
-router.get("/profile", protect, (req, res) => {
+router.get("/profile", protectPatient, (req, res) => {
   res.status(200).json({
-    message: "Authorized",
+    message: "Patient Authorized",
     user: req.user,
   });
 });

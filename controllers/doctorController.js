@@ -7,14 +7,14 @@ export const registerDoctor = async (req, res) => {
     // console.log("Doctor Form Data:", req.body);//this line is printing the submitted data in terminal 
     const {
       fullName,
-      // gender,
-      // dob,
-      // specialization,
-      // qualification,
-      // mobile,
+      gender,
+      dob,
+      specialization,
+      qualification,
+      mobile,
       email,
-      // address,
-      // username,
+      address,
+      username,
       password,
     } = req.body;
     const exists = await Doctor.findOne({ email });
@@ -28,14 +28,14 @@ export const registerDoctor = async (req, res) => {
 
     const doctor = await Doctor.create({
       fullName,
-      // gender,
-      // dob,
-      // specialization,
-      // qualification,
-      // mobile,
+      gender,
+      dob,
+      specialization,
+      qualification,
+      mobile,
       email,
-      // address,
-      // username,
+      address,
+      username,
       password: hashedPassword,
     });
 
@@ -63,7 +63,7 @@ export const loginDoctor = async (req,res) => {
 
     //create a json token
     const token = jwt.sign(
-      {id:doc._id},
+      {id:doc._id, role:"doctor"},
       process.env.JWT_SECRET,
       {expiresIn: "1d"},
     );
@@ -73,7 +73,7 @@ export const loginDoctor = async (req,res) => {
       httpOnly: true,
       secure: false, // true in production (HTTPS)
       sameSite: "lax",
-      maxAge: 12 * 60 * 60 * 500, // 1 day
+      maxAge: 24 * 60 * 60 *1000, // 1 day
     });
 
     res.status(200).json({

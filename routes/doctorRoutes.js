@@ -1,6 +1,6 @@
 import express from "express";
 import { registerDoctor, loginDoctor, logoutDoctor } from "../controllers/doctorController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protectDoctor} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -12,9 +12,9 @@ router.post("/logout",logoutDoctor);
 //    const user = await Patient.findById(req.user).select("-password");
 //    res.json(user);
 // });
-router.get("/profile", protect, (req, res) => {
+router.get("/profile", protectDoctor,(req, res) => {
   res.status(200).json({
-    message: "Authorized",
+    message: "Doctor Authorized",
     user: req.user,
   });
 });

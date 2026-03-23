@@ -14,7 +14,7 @@ const app = express();
 
 //middleware
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "*",
   credentials: true,
 })
 );
@@ -27,4 +27,8 @@ app.get("/", (req, res) => {
   res.send("Healthcare Backend Running...");
 });
 
-app.listen(process.env.PORT);
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

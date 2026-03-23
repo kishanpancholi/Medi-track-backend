@@ -1,6 +1,6 @@
 import express from "express";
 import { registerPatient, loginPatient, getPatientCount, logoutPatient} from "../controllers/patientController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protectPatient } from "../middleware/authMiddleware.js";
 import Patient from "../models/Patient.js";
 
 const router = express.Router();

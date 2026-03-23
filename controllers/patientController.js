@@ -88,6 +88,47 @@ export const getPatientCount = async (req, res) => {
    }
 };
 
+// 🔹 Helper function to calculate age from DOB
+const calculateAge = (dob) => {
+  const birthDate = new Date(dob);
+  const diff = Date.now() - birthDate.getTime();
+  const ageDate = new Date(diff);
+  return Math.abs(ageDate.getUTCFullYear() - 1970);
+};
+
+// 🔹 GET ALL PATIENTS (for Patient List page)
+export const getPatients = async (req, res) => {
+  try {
+    const patients = await Patient.find().sort({ createdAt: -1 });
+
+    // format data for frontend
+    const formattedPatients = patients.map((p) => ({
+      _id: p._id,
+      name: `${p.firstName} ${p.lastName}`,
+      age: calculateAge(p.dob),
+      gender: p.gender,
+      phone: p.mobile,
+      email: p.email,
+      address: p.address,
+      createdAt: p.createdAt,
+    }));
+
+    res.json(formattedPatients);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 🔹 DELETE PATIENT
+export const deletePatient = async (req, res) => {
+  try {
+    await Patient.findByIdAndDelete(req.params.id);
+    res.json({ message: "Patient deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const logoutPatient = (req, res) => {
   res.clearCookie("patientToken", {
     httpOnly: true,

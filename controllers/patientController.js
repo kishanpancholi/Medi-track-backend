@@ -78,6 +78,16 @@ export const loginPatient = async (req, res) => {
   }
 };
 
+// Add Patient Count
+export const getPatientCount = async (req, res) => {
+   try {
+      const totalPatients = await Patient.countDocuments();
+      res.json({ totalPatients });
+   } catch (error) {
+      res.status(500).json({ error: error.message });
+   }
+};
+
 export const logoutPatient = (req, res) => {
   res.clearCookie("patientToken", {
     httpOnly: true,

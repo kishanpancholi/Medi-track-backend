@@ -95,3 +95,15 @@ export const logoutDoctor = (req, res) => {
 
   res.status(200).json({ message: "Logout successful" });
 };
+
+// ✅ Get all doctors (only name + id)
+export const getAllDoctors = async (req, res) => {
+  try {
+    const doctors = await Doctor.find().select("fullName");
+
+    res.status(200).json(doctors);
+  } catch (error) {
+    console.error("Error fetching doctors:", error);
+    res.status(500).json({ message: error.message });
+  }
+};

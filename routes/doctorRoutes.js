@@ -1,5 +1,5 @@
 import express from "express";
-import { registerDoctor, loginDoctor, logoutDoctor } from "../controllers/doctorController.js";
+import { registerDoctor, loginDoctor, getAllDoctors, logoutDoctor } from "../controllers/doctorController.js";
 import { protectDoctor} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -7,6 +7,8 @@ const router = express.Router();
 router.post("/register", registerDoctor);
 router.post("/login",loginDoctor);
 router.post("/logout",logoutDoctor);
+
+router.get("/book", getAllDoctors);
 
 // router.get("/profile", protect, async (req, res) => {
 //    const user = await Patient.findById(req.user).select("-password");

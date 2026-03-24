@@ -60,7 +60,7 @@ export const loginPatient = async (req, res) => {
     );
 
     res
-    .cookie("patientToken", token,{
+    .cookie("token", token,{
       httpOnly: true,
       secure: false,
       sameSite: "lax",
@@ -130,10 +130,11 @@ export const deletePatient = async (req, res) => {
 };
 
 export const logoutPatient = (req, res) => {
-  res.clearCookie("patientToken", {
+  res.cookie("token", "", {
     httpOnly: true,
-    sameSite: "lax",
-    secure: false, // true in production
+    // sameSite: "lax",
+    // secure: false, // true in production
+    expires: new Date(0)
   });
 
   res.status(200).json({ message: "Logout successful" });

@@ -1,6 +1,7 @@
 import express from "express";
 import { registerDoctor, loginDoctor, getAllDoctors, logoutDoctor } from "../controllers/doctorController.js";
-import { protectDoctor} from "../middleware/authMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
+import { authorize } from "../middleware/authorize.js";
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ router.get("/book", getAllDoctors);
 //    const user = await Patient.findById(req.user).select("-password");
 //    res.json(user);
 // });
-router.get("/profile", protectDoctor,(req, res) => {
+router.get("/profile", protect, authorize("doctor"),(req, res) => {
   res.status(200).json({
     message: "Doctor Authorized",
     user: req.user,

@@ -1,6 +1,14 @@
 import express from "express";
-import { registerPatient, loginPatient, getPatientCount, getPatients, deletePatient, logoutPatient} from "../controllers/patientController.js";
-import { protectPatient } from "../middleware/authMiddleware.js";
+import {
+  registerPatient,
+  loginPatient,
+  getPatientCount,
+  getPatients,
+  deletePatient,
+  logoutPatient,
+} from "../controllers/patientController.js";
+import { protect } from "../middleware/authMiddleware.js";
+import { authorize } from "../middleware/authorize.js";
 import Patient from "../models/Patient.js";
 
 const router = express.Router();
@@ -16,7 +24,7 @@ router.post("/logout", logoutPatient);
 //    res.json(user);
 // });
 
-router.get("/profile", protectPatient, (req, res) => {
+router.get("/profile", protect, authorize("patient"), (req, res) => {
   res.status(200).json({
     message: "Patient Authorized",
     user: req.user,
@@ -27,7 +35,7 @@ router.get("/profile", protectPatient, (req, res) => {
 router.get("/count", getPatientCount);
 
 // Patient List APIs
-router.get("/", getPatients);          // GET all patients
+router.get("/", getPatients); // GET all patients
 router.delete("/:id", deletePatient); // DELETE patient
 
-export default router;  
+export default router;

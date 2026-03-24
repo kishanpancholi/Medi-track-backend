@@ -69,7 +69,7 @@ export const loginDoctor = async (req,res) => {
     );
 
    //STORE TOKEN IN COOKIE
-    res.cookie("doctorToken", token, {
+    res.cookie("token", token, {
       httpOnly: true,
       secure: false, // true in production (HTTPS)
       sameSite: "lax",
@@ -87,10 +87,11 @@ export const loginDoctor = async (req,res) => {
 };
 
 export const logoutDoctor = (req, res) => {
-  res.clearCookie("doctorToken", {
+  res.cookie("token", "", {
     httpOnly: true,
-    sameSite: "lax",
-    secure: false, // true in production
+    // sameSite: "lax",
+    // secure: false, // true in production
+    expires: new Date(0)
   });
 
   res.status(200).json({ message: "Logout successful" });

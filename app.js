@@ -5,7 +5,6 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import routes from "./routes/index.js";
 import cookieParser from "cookie-parser";
-import patientRoutes from "./routes/patientRoutes.js";
 
 //database connection
 connectDB();
@@ -14,7 +13,7 @@ const app = express();
 
 //middleware
 app.use(cors({
-  origin: "*",
+  origin: process.env.HOST,
   credentials: true,
 })
 );

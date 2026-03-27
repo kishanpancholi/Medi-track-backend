@@ -7,14 +7,7 @@ export const registerDoctor = async (req, res) => {
     // console.log("Doctor Form Data:", req.body);//this line is printing the submitted data in terminal 
     const {
       fullName,
-      gender,
-      dob,
-      specialization,
-      qualification,
-      mobile,
       email,
-      address,
-      username,
       password,
     } = req.body;
     const exists = await Doctor.findOne({ email });
@@ -28,14 +21,7 @@ export const registerDoctor = async (req, res) => {
 
     const doctor = await Doctor.create({
       fullName,
-      gender,
-      dob,
-      specialization,
-      qualification,
-      mobile,
       email,
-      address,
-      username,
       password: hashedPassword,
     });
 
@@ -80,6 +66,12 @@ export const loginDoctor = async (req,res) => {
       message: "Login Successful",
       doc,
       token,
+      doctor:{
+        id: doc._id,
+        fullName: doc.fullName,
+        email: doc.email,
+        isProfileComplete: doc.isProfileComplete,
+      }
     });
   }catch (err) {
     res.status(500).json({ message: "Server Error" });
@@ -105,6 +97,66 @@ export const getAllDoctors = async (req, res) => {
     res.status(200).json(doctors);
   } catch (error) {
     console.error("Error fetching doctors:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const completeDoctorProfile = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+
+    const {
+      gender,
+      dob,
+      specialization,
+      qualification,
+      mobile,
+      profilePic,
+      experience,
+      licenseNumber,
+      workingDays,
+      workingHours,
+      clinicName,
+      clinicAddress,
+      city,
+      state,
+      mapLink,
+      about,
+      emergencyContact,
+    } = req.body;
+
+    const updatedDoctor = await Doctor.findByIdAndUpdate(
+      doctorId,
+      {
+        gender,
+        dob,
+        specialization,
+        qualification,
+        mobile,
+        profilePic,
+        experience,
+        licenseNumber,
+        workingDays,
+        workingHours,
+        clinicName,
+        clinicAddress,
+        city,
+        state,
+        mapLink,
+        about,
+        emergencyContact,
+        isProfileComplete: true,
+      },
+      { new: true, 
+        runValidators: true
+      }
+    );
+
+    res.status(200).json({
+      message: "Profile completed successfully",
+      doctor: updatedDoctor,
+    });
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };

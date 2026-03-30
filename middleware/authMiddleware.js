@@ -20,6 +20,7 @@ export const protect = (req, res, next) => {// middleware it can run before the 
   }
 };
 
+
 /* export const protectPatient = (req, res, next) => {
   try {
 

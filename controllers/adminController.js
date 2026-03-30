@@ -1,4 +1,4 @@
-/* import Doctor from "../models/Doctor.js";
+import Admin from "../models/Admin.js"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -28,7 +28,8 @@ export const adminLogin = async (req, res) => {
     // 4. Send token (cookie or response)
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // true in production
+      secure: true, // true in production
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
 
@@ -43,9 +44,9 @@ export const adminLogin = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}; */
+};
 
-import Admin from "../models/Admin.js";
+/* import Admin from "../models/Admin.js";
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -70,7 +71,7 @@ export const adminLogin = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-};
+}; */
 
 // Get all doctors (Admin)
 /* export const getAllDoctors = async (req, res) => {

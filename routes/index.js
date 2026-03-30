@@ -5,7 +5,7 @@ import adminRoutes from "./adminRoutes.js";
 
 //routes
 const routes = (app) => {
-    app.use("/api/Patient", patientRoutes);
+    app.use("/api/patient", patientRoutes);
     app.use("/api/doctor", doctorRoutes);
     app.use("/api/appointment", appointmentRoutes);
     app.use("/api/admin", adminRoutes);

@@ -12,9 +12,17 @@
 
 import express from "express";
 import { adminLogin } from "../controllers/adminController.js";
+import { protect } from "../middleware/authMiddleware.js";
+import { authorize } from "../middleware/authorize.js";
 
 const router = express.Router();
 
 router.post("/login", adminLogin);
+
+// ✅ Protected route
+router.get("/dashboard",protect,authorize("admin"),(req, res) => {
+    res.json({ message: "Welcome Admin Dashboard" });
+  }
+);
 
 export default router;

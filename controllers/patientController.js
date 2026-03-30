@@ -87,6 +87,27 @@ export const getPatientCount = async (req, res) => {
    }
 };
 
+// ✅ Get today's patients count
+export const getTodayPatients = async (req, res) => {
+  try {
+    const today = new Date();
+
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+    const count = await Patient.countDocuments({
+      createdAt: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    });
+
+    res.json({ totalTodayPatients: count });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // 🔹 Helper function to calculate age from DOB
 const calculateAge = (dob) => {
   const birthDate = new Date(dob);

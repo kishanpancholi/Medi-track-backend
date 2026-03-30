@@ -4,6 +4,7 @@ import {
   loginPatient,
   getPatientCount,
   getPatients,
+  getTodayPatients,
   deletePatient,
   logoutPatient,
 } from "../controllers/patientController.js";
@@ -33,6 +34,7 @@ router.get("/profile", protect, authorize("patient"), (req, res) => {
 
 // Add count
 router.get("/count", getPatientCount);
+router.get("/today", getTodayPatients);
 
 // Patient List APIs
 router.get("/", getPatients); // GET all patients

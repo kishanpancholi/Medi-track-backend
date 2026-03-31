@@ -11,13 +11,14 @@
 // export default router;
 
 import express from "express";
-import { adminLogin } from "../controllers/adminController.js";
+import { adminLogin, logoutAdmin } from "../controllers/adminController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
 
 const router = express.Router();
 
 router.post("/login", adminLogin);
+router.post("/logout",logoutAdmin);
 
 // ✅ Protected route
 router.get("/dashboard",protect,authorize("admin"),(req, res) => {

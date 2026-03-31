@@ -29,7 +29,7 @@ export const adminLogin = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: true, // true in production
-      sameSite: "none",
+      sameSite: "None",
       maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
 
@@ -44,6 +44,17 @@ export const adminLogin = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+export const logoutAdmin = (req, res) => {
+  res.cookie("token", "", {
+    httpOnly: true,
+    // sameSite: "lax",
+    // secure: false, // true in production
+    expires: new Date(0)
+  });
+
+  res.status(200).json({ message: "Logout successful" });
 };
 
 /* import Admin from "../models/Admin.js";

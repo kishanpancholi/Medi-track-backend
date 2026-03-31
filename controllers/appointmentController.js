@@ -26,7 +26,7 @@ export const getDoctorAppointments = async (req, res) => {
     const doctorId = req.user.id; // logged-in doctor id
 
     const appointments = await Appointment.find({ doctor: doctorId })
-      .populate("patient", "name") // get patient name
+      .populate("patient", "firstName lastName") // get patient name
       .sort({ date: 1 });
 
     res.status(200).json(appointments);
@@ -65,8 +65,8 @@ export const updateAppointmentStatus = async (req, res) => {
 export const getAllAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find()
-      .populate("doctor", "name")   // get doctor name
-      .populate("patient", "name")  // get patient name
+      .populate("doctor", "fullName")   // get doctor name
+      .populate("patient", "firstName lastName")  // get patient name
       .sort({ date: -1 });
 
     res.status(200).json(appointments);

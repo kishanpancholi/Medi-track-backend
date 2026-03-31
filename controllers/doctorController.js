@@ -9,6 +9,11 @@ export const registerDoctor = async (req, res) => {
       fullName,
       email,
       password,
+      specialization,
+      qualification,
+      mobile,
+      experience,
+      licenseNumber,
     } = req.body;
     const exists = await Doctor.findOne({ email });
     if (exists) {
@@ -23,6 +28,11 @@ export const registerDoctor = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
+      specialization,
+      qualification,
+      mobile,
+      experience,
+      licenseNumber,
     });
 
     res.status(201).json({ msg: "Doctor registered successfully!", doctor });

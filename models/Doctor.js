@@ -26,6 +26,10 @@ const doctorSchema = new mongoose.Schema(
 
     about: { type: String },
     emergencyContact: { type: String },
+    status: {
+      type: String,
+      default: "pending"
+    },
 
     isProfileComplete: { type: Boolean, default: false },
   },

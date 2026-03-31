@@ -35,3 +35,28 @@ export const getDoctorAppointments = async (req, res) => {
     res.status(500).json({ message: "Error fetching appointments" });
   }
 };
+
+export const updateAppointmentStatus = async (req, res) => {
+  try {
+    const { id } = req.params; // appointment id
+    const { status } = req.body; // approved / rejected
+
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+     if (!updatedAppointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    res.status(200).json({
+      message: "Status updated successfully",
+      updatedAppointment,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error updating status" });
+  }
+};

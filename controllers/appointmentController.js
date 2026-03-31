@@ -60,3 +60,18 @@ export const updateAppointmentStatus = async (req, res) => {
     res.status(500).json({ message: "Error updating status" });
   }
 };
+
+// show appointments on admin side
+export const getAllAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find()
+      .populate("doctor", "name")   // get doctor name
+      .populate("patient", "name")  // get patient name
+      .sort({ date: -1 });
+
+    res.status(200).json(appointments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching all appointments" });
+  }
+};

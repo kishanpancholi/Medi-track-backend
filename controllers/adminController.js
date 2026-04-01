@@ -57,33 +57,6 @@ export const logoutAdmin = (req, res) => {
   res.status(200).json({ message: "Logout successful" });
 };
 
-/* import Admin from "../models/Admin.js";
-export const adminLogin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // check admin in DB
-    const admin = await Admin.findOne({ email });
-
-    if (!admin) {
-      return res.status(400).json({ message: "Admin not found" });
-    }
-
-    // simple password check (no bcrypt)
-    if (admin.password !== password) {
-      return res.status(400).json({ message: "Invalid password" });
-    }
-
-    res.status(200).json({
-      message: "Login successful",
-      admin: admin
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-}; */
-
 // Get all doctors (Admin)
 /* export const getAllDoctors = async (req, res) => {
   try {

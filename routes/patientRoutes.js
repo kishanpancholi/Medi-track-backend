@@ -37,7 +37,7 @@ router.get("/count", getPatientCount);
 router.get("/today", getTodayPatients);
 
 // Patient List APIs
-router.get("/list", getPatients); // GET all patients
+router.get("/list", getPatients); // GET all patients in admin side in patient page
 router.delete("/:id", deletePatient); // DELETE patient
 
 export default router;

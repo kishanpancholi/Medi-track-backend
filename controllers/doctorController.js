@@ -170,3 +170,25 @@ export const completeDoctorProfile = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const getAllDoctor = async (req, res) => {
+  try {
+    // Fetch all doctors (you can sort if needed)
+    const doctors = await Doctor.find().sort({ createdAt: -1 });
+
+    // Send response
+    res.status(200).json({
+      success: true,
+      count: doctors.length,
+      doctors,
+    });
+
+  } catch (error) {
+    console.error("Error fetching doctors:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch doctors",
+    });
+  }
+};

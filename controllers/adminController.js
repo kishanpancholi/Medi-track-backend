@@ -56,22 +56,3 @@ export const logoutAdmin = (req, res) => {
 
   res.status(200).json({ message: "Logout successful" });
 };
-
-// Get all doctors (Admin)
-/* export const getAllDoctors = async (req, res) => {
-  try {
-    const doctors = await Doctor.find().select("-password");
-
-    res.status(200).json({
-      success: true,
-      totalDoctors: doctors.length,
-      doctors,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch doctors",
-      error: error.message,
-    });
-  }
-}; */

@@ -11,7 +11,7 @@ router.post("/logout",logoutDoctor);
 router.post("/complete-profile", protect,authorize("doctor"),completeDoctorProfile
 );
 
-router.get("/book", getAllDoctors);
+router.get("/book", getAllDoctors); // get all doctors in dropdown
 
 // router.get("/profile", protect, async (req, res) => {
 //    const user = await Patient.findById(req.user).select("-password");

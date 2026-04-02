@@ -87,7 +87,7 @@ export const getPatientCount = async (req, res) => {
    }
 };
 
-// ✅ Get today's patients count
+// Get today's patients count
 export const getTodayPatients = async (req, res) => {
   try {
     const today = new Date();
@@ -108,7 +108,7 @@ export const getTodayPatients = async (req, res) => {
   }
 };
 
-// 🔹 Helper function to calculate age from DOB
+// Helper function to calculate age from DOB
 const calculateAge = (dob) => {
   const birthDate = new Date(dob);
   const diff = Date.now() - birthDate.getTime();
@@ -116,7 +116,7 @@ const calculateAge = (dob) => {
   return Math.abs(ageDate.getUTCFullYear() - 1970);
 };
 
-// 🔹 GET ALL PATIENTS (for Patient List page)
+// GET ALL PATIENTS (for Patient List page)
 export const getPatients = async (req, res) => {
   try {
     const patients = await Patient.find().sort({ createdAt: -1 });
@@ -139,7 +139,7 @@ export const getPatients = async (req, res) => {
   }
 };
 
-// 🔹 DELETE PATIENT
+// DELETE PATIENT
 export const deletePatient = async (req, res) => {
   try {
     await Patient.findByIdAndDelete(req.params.id);

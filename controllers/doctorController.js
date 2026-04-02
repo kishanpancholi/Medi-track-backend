@@ -99,7 +99,7 @@ export const logoutDoctor = (req, res) => {
   res.status(200).json({ message: "Logout successful" });
 };
 
-// ✅ Get all doctors (only name + id)
+// Get all doctors (only name + id) get all doctors in dropdown
 export const getAllDoctors = async (req, res) => {
   try {
     const doctors = await Doctor.find().select("fullName");

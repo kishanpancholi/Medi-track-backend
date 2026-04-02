@@ -1,5 +1,6 @@
 import Appointment from "../models/Appointment.js";
 
+// to create an appointment (stores an appointment in database)
 export const createAppointment = async (req, res) => {
   try {
     const { doctor, patient, date, time } = req.body;
@@ -20,7 +21,8 @@ export const createAppointment = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
+ 
+// show appointments of particular doctor- checked
 export const getDoctorAppointments = async (req, res) => {
   try {
     const doctorId = req.user.id; // logged-in doctor id
@@ -36,6 +38,7 @@ export const getDoctorAppointments = async (req, res) => {
   }
 };
 
+// update the status - checked
 export const updateAppointmentStatus = async (req, res) => {
   try {
     const { id } = req.params; // appointment id

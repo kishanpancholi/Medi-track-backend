@@ -1,5 +1,5 @@
 import express from "express";
-import { registerDoctor, loginDoctor, getAllDoctors, logoutDoctor, completeDoctorProfile } from "../controllers/doctorController.js";
+import { registerDoctor, loginDoctor, getDoctorNames, logoutDoctor, completeDoctorProfile } from "../controllers/doctorController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
 
@@ -11,7 +11,7 @@ router.post("/logout",logoutDoctor);
 router.post("/complete-profile", protect,authorize("doctor"),completeDoctorProfile
 );
 
-router.get("/book", getAllDoctors); // get all doctors in dropdown
+router.get("/names", getDoctorNames); // get all doctors in dropdown
 
 // router.get("/profile", protect, async (req, res) => {
 //    const user = await Patient.findById(req.user).select("-password");

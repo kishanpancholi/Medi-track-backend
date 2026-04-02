@@ -100,7 +100,7 @@ export const logoutDoctor = (req, res) => {
 };
 
 // Get all doctors (only name + id) get all doctors in dropdown
-export const getAllDoctors = async (req, res) => {
+export const getDoctorNames = async (req, res) => {
   try {
     const doctors = await Doctor.find().select("fullName");
 

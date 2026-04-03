@@ -78,35 +78,35 @@ export const loginPatient = async (req, res) => {
 };
 
 // Add Patient Count
-export const getPatientCount = async (req, res) => {
-   try {
-      const totalPatients = await Patient.countDocuments();
-      res.json({ totalPatients });
-   } catch (error) {
-      res.status(500).json({ error: error.message });
-   }
-};
+// export const getPatientCount = async (req, res) => {
+//    try {
+//       const totalPatients = await Patient.countDocuments();
+//       res.json({ totalPatients });
+//    } catch (error) {
+//       res.status(500).json({ error: error.message });
+//    }
+// };
 
 // Get today's patients count
-export const getTodayPatients = async (req, res) => {
-  try {
-    const today = new Date();
+// export const getTodayPatients = async (req, res) => {
+//   try {
+//     const today = new Date();
 
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+//     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+//     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-    const count = await Patient.countDocuments({
-      createdAt: {
-        $gte: startOfDay,
-        $lte: endOfDay,
-      },
-    });
+//     const count = await Patient.countDocuments({
+//       createdAt: {
+//         $gte: startOfDay,
+//         $lte: endOfDay,
+//       },
+//     });
 
-    res.json({ totalTodayPatients: count });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+//     res.json({ totalTodayPatients: count });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 
 // Helper function to calculate age from DOB
 const calculateAge = (dob) => {

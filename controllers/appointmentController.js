@@ -78,3 +78,41 @@ export const getAllAppointments = async (req, res) => {
     res.status(500).json({ message: "Error fetching all appointments" });
   }
 };
+
+// to get count on doctor side
+export const getDoctorDashboard = async (req, res) => {
+  try {
+    const doctorId = req.user.id; // use id (your code uses id, not _id)
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const totalPatients = await Appointment.distinct("patient", {
+      doctor: doctorId,
+    });
+
+    const todayPatients = await Appointment.distinct("patient", {
+      doctor: doctorId,
+      date: { $gte: todayStart, $lte: todayEnd },
+    });
+
+    const todayCompleted = await Appointment.countDocuments({
+      doctor: doctorId,
+      status: "completed",
+      date: { $gte: todayStart, $lte: todayEnd },
+    });
+
+    res.status(200).json({
+      totalPatients: totalPatients.length,
+      todayPatients: todayPatients.length,
+      todayCompleted,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -171,6 +171,7 @@ export const completeDoctorProfile = async (req, res) => {
   }
 };
 
+// get all doctors on admin side
 export const getAllDoctor = async (req, res) => {
   try {
     // Fetch all doctors (you can sort if needed)

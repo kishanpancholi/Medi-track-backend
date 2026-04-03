@@ -2,9 +2,9 @@ import express from "express";
 import {
   registerPatient,
   loginPatient,
-  getPatientCount,
+  // getPatientCount,
   getPatients,
-  getTodayPatients,
+  // getTodayPatients,
   deletePatient,
   logoutPatient,
 } from "../controllers/patientController.js";
@@ -33,8 +33,8 @@ router.get("/profile", protect, authorize("patient"), (req, res) => {
 });
 
 // Add count
-router.get("/count", getPatientCount);
-router.get("/today", getTodayPatients);
+// router.get("/count", getPatientCount);
+// router.get("/today", getTodayPatients);
 
 // Patient List APIs
 router.get("/list", getPatients); // GET all patients in admin side in patient page

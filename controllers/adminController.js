@@ -1,6 +1,9 @@
 import Admin from "../models/Admin.js"
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Doctor from "../models/Doctor.js";
+import Patient from "../models/Patient.js";
+import Appointment from "../models/Appointment.js";
 
 export const adminLogin = async (req, res) => {
   try {
@@ -39,6 +42,32 @@ export const adminLogin = async (req, res) => {
         id: admin._id,
         email: admin.email
       }
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getDashboardData = async (req, res) => {
+  try {
+    const [
+      totalDoctors,
+      totalPatients,
+      totalAppointments,
+      pendingAppointment,
+    ] = await Promise.all([
+      Doctor.countDocuments(),
+      Patient.countDocuments(),
+      Appointment.countDocuments(),
+      Appointment.countDocuments({ status: "pending" }),
+    ]);
+
+    res.status(200).json({
+      totalDoctors,
+      totalPatients,
+      totalAppointments,
+      pendingAppointment,
     });
 
   } catch (error) {

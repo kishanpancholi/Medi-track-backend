@@ -28,6 +28,7 @@ const doctorSchema = new mongoose.Schema(
     emergencyContact: { type: String },
     status: {
       type: String,
+      enum: ["pending", "approved", "rejected"],
       default: "pending"
     },
 

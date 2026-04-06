@@ -22,7 +22,7 @@ export const createAppointment = async (req, res) => {
   }
 };
  
-// show appointments of particular doctor- checked
+// show appointments of particular doctor
 export const getDoctorAppointments = async (req, res) => {
   try {
     const doctorId = req.user.id; // logged-in doctor id
@@ -38,7 +38,7 @@ export const getDoctorAppointments = async (req, res) => {
   }
 };
 
-// update the status - checked
+// update the status
 export const updateAppointmentStatus = async (req, res) => {
   try {
     const { id } = req.params; // appointment id

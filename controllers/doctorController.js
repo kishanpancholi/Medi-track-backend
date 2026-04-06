@@ -52,6 +52,13 @@ export const loginDoctor = async (req,res) => {
       return res.status(400).json({message:"Email Not Registerd"});
     }
 
+    // if admin will not approved it will show this msg to doctor
+    if (doc.status !== "approved") {
+      return res.status(403).json({
+        message: "Your account is not approved yet",
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, doc.password);
     if(!isMatch){
       return res.status(400).json({ message: "Incorrect Password" });
@@ -191,5 +198,35 @@ export const getAllDoctor = async (req, res) => {
       success: false,
       message: "Failed to fetch doctors",
     });
+  }
+};
+
+// Admin approves or rejects doctor
+export const updateDoctorStatus = async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+    const { status } = req.body; // "approved" or "rejected"
+
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    const doctor = await Doctor.findByIdAndUpdate(
+      doctorId,
+      { status },
+      { new: true }
+    );
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    res.status(200).json({
+      message: `Doctor ${status} successfully`,
+      doctor,
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

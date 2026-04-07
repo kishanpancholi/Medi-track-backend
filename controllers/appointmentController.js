@@ -79,6 +79,77 @@ export const getAllAppointments = async (req, res) => {
   }
 };
 
+// Cancel appointment (only patient)
+export const cancelAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const patientId = req.user.id;
+
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // 🔒 check patient ownership
+    if (appointment.patient.toString() !== patientId) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    appointment.status = "cancelled";
+    await appointment.save();
+
+    res.status(200).json({
+      message: "Appointment cancelled successfully",
+      appointment,
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Reschedule appointment (only patient)
+export const rescheduleAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const { date, time } = req.body;
+    const patientId = req.user.id;
+
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // 🔒 check patient ownership
+    if (appointment.patient.toString() !== patientId) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    // ❌ cannot reschedule cancelled/completed
+    if (["cancelled", "completed"].includes(appointment.status)) {
+      return res.status(400).json({
+        message: "Cannot reschedule this appointment",
+      });
+    }
+
+    appointment.date = date;
+    appointment.time = time;
+    appointment.status = "pending";
+
+    await appointment.save();
+
+    res.status(200).json({
+      message: "Appointment rescheduled successfully",
+      appointment,
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // to get count on doctor side
 export const getDoctorDashboard = async (req, res) => {
   try {

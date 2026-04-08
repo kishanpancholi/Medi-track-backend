@@ -5,10 +5,30 @@ export const createAppointment = async (req, res) => {
   try {
     const { doctor, patient, date, time } = req.body;
 
+    const selectedDate = new Date(date);
+    selectedDate.setHours(12, 0, 0, 0);
+
+    // 🔍 Check if slot already exists (ignore cancelled)
+    const existingAppointment = await Appointment.findOne({
+      doctor,
+      time,
+      status: { $ne: "cancelled" },
+      date: {
+  $gte: selectedDate,
+  $lt: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000),
+},
+    });
+
+    if (existingAppointment) {
+      return res.status(400).json({
+        message: "This time slot is already booked",
+      });
+    }
+
     const appointment = await Appointment.create({
       doctor,
       patient,
-      date,
+      date: selectedDate,
       time,
     });
 
@@ -16,8 +36,17 @@ export const createAppointment = async (req, res) => {
       message: "Appointment booked successfully",
       appointment,
     });
+
   } catch (error) {
     console.error(error);
+
+    // 🔥 Handle duplicate key error (race condition)
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: "This time slot is already booked",
+      });
+    }
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -50,7 +79,7 @@ export const updateAppointmentStatus = async (req, res) => {
       { new: true }
     );
 
-     if (!updatedAppointment) {
+    if (!updatedAppointment) {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
@@ -58,6 +87,7 @@ export const updateAppointmentStatus = async (req, res) => {
       message: "Status updated successfully",
       updatedAppointment,
     });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error updating status" });
@@ -116,6 +146,9 @@ export const rescheduleAppointment = async (req, res) => {
     const { date, time } = req.body;
     const patientId = req.user.id;
 
+    const newDate = new Date(date);
+newDate.setHours(12, 0, 0, 0);
+
     const appointment = await Appointment.findById(appointmentId);
 
     if (!appointment) {
@@ -134,6 +167,23 @@ export const rescheduleAppointment = async (req, res) => {
       });
     }
 
+    // 🔍 Check if new slot already booked
+    const existingAppointment = await Appointment.findOne({
+      doctor: appointment.doctor,
+      time,
+      status: { $ne: "cancelled" },
+      date: {
+    $gte: newDate,
+    $lt: new Date(newDate.getTime() + 24 * 60 * 60 * 1000),
+  },
+    });
+
+    if (existingAppointment) {
+      return res.status(400).json({
+        message: "This time slot is already booked",
+      });
+    }
+
     appointment.date = date;
     appointment.time = time;
     appointment.status = "pending";
@@ -146,6 +196,14 @@ export const rescheduleAppointment = async (req, res) => {
     });
 
   } catch (error) {
+    console.error(error);
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: "This time slot is already booked",
+      });
+    }
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -153,10 +211,10 @@ export const rescheduleAppointment = async (req, res) => {
 // to get count on doctor side
 export const getDoctorDashboard = async (req, res) => {
   try {
-    const doctorId = req.user.id; // use id (your code uses id, not _id)
+    const doctorId = req.user.id;
 
     const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
+    todayStart.setHours(12, 0, 0, 0);
 
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
@@ -184,6 +242,32 @@ export const getDoctorDashboard = async (req, res) => {
 
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ================== GET BOOKED SLOTS ==================
+export const getBookedSlots = async (req, res) => {
+  try {
+    const { doctorId, date } = req.query;
+
+    const selectedDate = new Date(date);
+    selectedDate.setHours(12, 0, 0, 0);
+
+    const appointments = await Appointment.find({
+      doctor: doctorId,
+      status: { $ne: "cancelled" }, // ignore cancelled
+      date: {
+    $gte: selectedDate,
+    $lt: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000),
+  },
+    });
+
+    const bookedSlots = appointments.map(app => app.time);
+
+    res.json(bookedSlots);
+
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };

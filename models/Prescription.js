@@ -21,8 +21,35 @@ const prescriptionSchema = new mongoose.Schema(
         name: { type: String, required: true },
         dosage: { type: String, required: true },
         duration: { type: String, required: true },
+        timing: [
+          {
+            timeOfDay: {
+              type: String,
+              enum: ["Morning", "Afternoon", "Night"],
+            },
+            intake: {
+              type: String,
+              enum: ["before_food", "after_food"],
+              required: true,
+            },
+          },
+        ],
+
+         // ✅ NEW: Status of each medicine (optional level)
+        mStatus: {
+          type: String,
+          enum: ["active", "completed"],
+          default: "active",
+        },
       },
     ],
+
+     // ✅ Prescription level status (recommended)
+    pStatus: {
+      type: String,
+      enum: ["active", "completed"],
+      default: "active",
+    },
     notes: String,
   },
   { timestamps: true }

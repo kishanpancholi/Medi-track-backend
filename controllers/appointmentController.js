@@ -10,14 +10,14 @@ export const createAppointment = async (req, res) => {
 
     // 🔍 Check if slot already exists (ignore cancelled)
     const existingAppointment = await Appointment.findOne({
-      doctor,
-      time,
-      status: { $ne: "cancelled" },
-      date: {
-  $gte: selectedDate,
-  $lt: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000),
-},
-    });
+  doctor,
+  time,
+  status: "approved", // 🔥 ONLY approved blocks slot
+  date: {
+    $gte: selectedDate,
+    $lt: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000),
+  },
+});
 
     if (existingAppointment) {
       return res.status(400).json({
@@ -70,22 +70,62 @@ export const getDoctorAppointments = async (req, res) => {
 // update the status
 export const updateAppointmentStatus = async (req, res) => {
   try {
-    const { id } = req.params; // appointment id
-    const { status } = req.body; // approved / rejected
+    const { id } = req.params;
+    const { status } = req.body;
 
-    const updatedAppointment = await Appointment.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
+    const appointment = await Appointment.findById(id);
 
-    if (!updatedAppointment) {
+    if (!appointment) {
       return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // 🔥 If approving, check existing approved slot
+    if (status === "approved") {
+      const start = new Date(appointment.date);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(appointment.date);
+      end.setHours(23, 59, 59, 999);
+
+      const existingApproved = await Appointment.findOne({
+        doctor: appointment.doctor,
+        time: appointment.time,
+        status: "approved",
+        date: { $gte: start, $lte: end },
+        _id: { $ne: appointment._id },
+      });
+
+      if (existingApproved) {
+        return res.status(400).json({
+          message: "Another appointment already approved for this slot",
+        });
+      }
+
+      // ✅ Approve this appointment
+      appointment.status = "approved";
+      await appointment.save();
+
+      // 🔥 AUTO REJECT OTHERS
+      await Appointment.updateMany(
+        {
+          doctor: appointment.doctor,
+          time: appointment.time,
+          date: appointment.date,
+          status: "pending",
+          _id: { $ne: appointment._id },
+        },
+        { status: "rejected" }
+      );
+
+    } else {
+      // Normal update (rejected / completed / cancelled)
+      appointment.status = status;
+      await appointment.save();
     }
 
     res.status(200).json({
       message: "Status updated successfully",
-      updatedAppointment,
+      appointment,
     });
 
   } catch (error) {
@@ -169,14 +209,14 @@ newDate.setHours(12, 0, 0, 0);
 
     // 🔍 Check if new slot already booked
     const existingAppointment = await Appointment.findOne({
-      doctor: appointment.doctor,
-      time,
-      status: { $ne: "cancelled" },
-      date: {
+  doctor: appointment.doctor,
+  time,
+  status: "approved", // 🔥 IMPORTANT
+  date: {
     $gte: newDate,
     $lt: new Date(newDate.getTime() + 24 * 60 * 60 * 1000),
   },
-    });
+});
 
     if (existingAppointment) {
       return res.status(400).json({
@@ -184,7 +224,7 @@ newDate.setHours(12, 0, 0, 0);
       });
     }
 
-    appointment.date = date;
+    appointment.date = newDate;
     appointment.time = time;
     appointment.status = "pending";
 
@@ -214,7 +254,7 @@ export const getDoctorDashboard = async (req, res) => {
     const doctorId = req.user.id;
 
     const todayStart = new Date();
-    todayStart.setHours(12, 0, 0, 0);
+    todayStart.setHours(0, 0, 0, 0);
 
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
@@ -255,13 +295,13 @@ export const getBookedSlots = async (req, res) => {
     selectedDate.setHours(12, 0, 0, 0);
 
     const appointments = await Appointment.find({
-      doctor: doctorId,
-      status: { $ne: "cancelled" }, // ignore cancelled
-      date: {
+  doctor: doctorId,
+  status: "approved", // 🔥 only approved slots blocked
+  date: {
     $gte: selectedDate,
     $lt: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000),
   },
-    });
+});
 
     const bookedSlots = appointments.map(app => app.time);
 

@@ -53,11 +53,11 @@ export const loginDoctor = async (req,res) => {
     }
 
     // if admin will not approved it will show this msg to doctor
-    if (doc.status !== "approved") {
+    /* if (doc.status !== "approved") {
       return res.status(403).json({
         message: "Your account is not approved yet",
       });
-    }
+    } */
 
     const isMatch = await bcrypt.compare(password, doc.password);
     if(!isMatch){

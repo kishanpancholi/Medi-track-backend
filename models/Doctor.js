@@ -15,8 +15,13 @@ const doctorSchema = new mongoose.Schema(
     licenseNumber: { type: String, required: true },
 
     workingDays: [{ type: String }],
-    workingHours: { type: String },
-
+    // workingHours: { type: String },
+    workingHours: [
+      {
+        start: { type: String, required: true }, // "09:00"
+        end: { type: String, required: true }    // "12:00"
+      }
+    ],
     clinicName: { type: String },
     clinicAddress: { type: String },
 
@@ -31,7 +36,12 @@ const doctorSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending"
     },
-
+    serviceType:{
+      type: [String],
+      enum: ["physical", "videocall"],
+      default:["physical"]
+    },
+    
     isProfileComplete: { type: Boolean, default: false },
   },
   { timestamps: true },

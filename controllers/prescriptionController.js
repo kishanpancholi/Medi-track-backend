@@ -6,7 +6,7 @@ export const createPrescription = async (req, res) => {
     const { patient, diagnosis, medicines, notes } = req.body;
 
     const prescription = await Prescription.create({
-      doctor: req.user._id,
+      doctor: req.user.id,
       patient,
       diagnosis,
       medicines,
@@ -29,10 +29,13 @@ export const createPrescription = async (req, res) => {
 // Patient gets prescriptions
 export const getPatientPrescriptions = async (req, res) => {
   try {
+    console.log("Logged-in user:", req.user);
     const prescriptions = await Prescription.find({
-      patient: req.user._id,
+      patient: req.user.id,
     }).populate("doctor", "fullName")
       .sort({ createdAt: -1 });
+
+      console.log("Prescriptions found:", prescriptions);
 
    res.status(200).json({
       success: true,
@@ -51,7 +54,7 @@ export const getPatientPrescriptions = async (req, res) => {
 export const getDoctorPrescriptions = async (req, res) => {
   try {
     const prescriptions = await Prescription.find({
-      doctor: req.user._id,
+      doctor: req.user.id,
     })
       .populate("patient", "firstName lastName email")
       .sort({ createdAt: -1 });

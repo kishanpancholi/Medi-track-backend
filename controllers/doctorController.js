@@ -140,6 +140,7 @@ export const completeDoctorProfile = async (req, res) => {
       mapLink,
       about,
       emergencyContact,
+      serviceType,
     } = req.body;
 
     const updatedDoctor = await Doctor.findByIdAndUpdate(
@@ -162,6 +163,7 @@ export const completeDoctorProfile = async (req, res) => {
         mapLink,
         about,
         emergencyContact,
+        serviceType,
         isProfileComplete: true,
       },
       { new: true, 

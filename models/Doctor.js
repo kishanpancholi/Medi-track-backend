@@ -31,7 +31,11 @@ const doctorSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending"
     },
-
+    serviceType:{
+      type: String,
+      enum: ["physical", "videocall"],
+      default:"physical"
+    },
     isProfileComplete: { type: Boolean, default: false },
   },
   { timestamps: true },

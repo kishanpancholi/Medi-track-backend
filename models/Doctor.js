@@ -15,8 +15,13 @@ const doctorSchema = new mongoose.Schema(
     licenseNumber: { type: String, required: true },
 
     workingDays: [{ type: String }],
-    workingHours: { type: String },
-
+    // workingHours: { type: String },
+    workingHours: [
+      {
+        start: { type: String, required: true }, // "09:00"
+        end: { type: String, required: true }    // "12:00"
+      }
+    ],
     clinicName: { type: String },
     clinicAddress: { type: String },
 

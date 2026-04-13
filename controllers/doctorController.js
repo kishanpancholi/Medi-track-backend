@@ -75,6 +75,7 @@ export const loginDoctor = async (req,res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: true, // true in production (HTTPS)
+      path: "/",
       sameSite: "None",
       maxAge: 24 * 60 * 60 *1000, // 1 day
     });
@@ -95,16 +96,16 @@ export const loginDoctor = async (req,res) => {
   }
 };
 
-export const logoutDoctor = (req, res) => {
-  res.cookie("token", "", {
-    httpOnly: true,
-    // sameSite: "lax",
-    // secure: false, // true in production
-    expires: new Date(0)
-  });
+// export const logoutDoctor = (req, res) => {
+//   res.cookie("token", "", {
+//     httpOnly: true,
+//     // sameSite: "lax",
+//     // secure: false, // true in production
+//     expires: new Date(0)
+//   });
 
-  res.status(200).json({ message: "Logout successful" });
-};
+//   res.status(200).json({ message: "Logout successful" });
+// };
 
 // Get all doctors (only name + id) get all doctors in dropdown
 export const getDoctorNames = async (req, res) => {
@@ -232,3 +233,16 @@ export const updateDoctorStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "None",
+  path: "/", // VERY IMPORTANT
+};
+
+export const logoutDoctor = (req, res) => {
+  res.clearCookie("token", cookieOptions);
+  res.status(200).json({ message: "Logout successful" });
+};
+

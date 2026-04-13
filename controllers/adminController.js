@@ -33,6 +33,7 @@ export const adminLogin = async (req, res) => {
       httpOnly: true,
       secure: true, // true in production
       sameSite: "None",
+      path: "/",
       maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
 
@@ -75,13 +76,24 @@ export const getDashboardData = async (req, res) => {
   }
 };
 
-export const logoutAdmin = (req, res) => {
-  res.cookie("token", "", {
-    httpOnly: true,
-    // sameSite: "lax",
-    // secure: false, // true in production
-    expires: new Date(0)
-  });
+// export const logoutAdmin = (req, res) => {
+//   res.cookie("token", "", {
+//     httpOnly: true,
+//     sameSite: "None",
+//     secure: true, // true in production
+//   });
 
+//   res.status(200).json({ message: "Logout successful" });
+// };
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "None",
+  path: "/", // VERY IMPORTANT
+};
+
+export const logoutAdmin = (req, res) => {
+  res.clearCookie("token", cookieOptions);
   res.status(200).json({ message: "Logout successful" });
 };

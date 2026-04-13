@@ -63,6 +63,7 @@ export const loginPatient = async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "None",
+      path: "/",
       maxAge: 24 * 60 * 60* 1000,// cookie valid for the 1 day
     })
     
@@ -149,7 +150,14 @@ export const deletePatient = async (req, res) => {
   }
 };
 
-export const logoutPatient = (req, res) => {
+const cookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "None",
+  path: "/", // VERY IMPORTANT
+};
+
+/* export const logoutPatient = (req, res) => {
   res.cookie("token", "", {
     httpOnly: true,
     // sameSite: "lax",
@@ -157,5 +165,10 @@ export const logoutPatient = (req, res) => {
     expires: new Date(0)
   });
 
+  res.status(200).json({ message: "Logout successful" });
+}; */
+
+export const logoutPatient = (req, res) => {
+  res.clearCookie("token", cookieOptions);
   res.status(200).json({ message: "Logout successful" });
 };

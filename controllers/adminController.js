@@ -76,16 +76,6 @@ export const getDashboardData = async (req, res) => {
   }
 };
 
-// export const logoutAdmin = (req, res) => {
-//   res.cookie("token", "", {
-//     httpOnly: true,
-//     sameSite: "None",
-//     secure: true, // true in production
-//   });
-
-//   res.status(200).json({ message: "Logout successful" });
-// };
-
 const cookieOptions = {
   httpOnly: true,
   secure: true,

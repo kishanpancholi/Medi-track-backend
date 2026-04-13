@@ -96,17 +96,6 @@ export const loginDoctor = async (req,res) => {
   }
 };
 
-// export const logoutDoctor = (req, res) => {
-//   res.cookie("token", "", {
-//     httpOnly: true,
-//     // sameSite: "lax",
-//     // secure: false, // true in production
-//     expires: new Date(0)
-//   });
-
-//   res.status(200).json({ message: "Logout successful" });
-// };
-
 // Get all doctors (only name + id) get all doctors in dropdown
 export const getDoctorNames = async (req, res) => {
   try {

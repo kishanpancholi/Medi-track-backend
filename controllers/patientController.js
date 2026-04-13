@@ -157,17 +157,6 @@ const cookieOptions = {
   path: "/", // VERY IMPORTANT
 };
 
-/* export const logoutPatient = (req, res) => {
-  res.cookie("token", "", {
-    httpOnly: true,
-    // sameSite: "lax",
-    // secure: false, // true in production
-    expires: new Date(0)
-  });
-
-  res.status(200).json({ message: "Logout successful" });
-}; */
-
 export const logoutPatient = (req, res) => {
   res.clearCookie("token", cookieOptions);
   res.status(200).json({ message: "Logout successful" });

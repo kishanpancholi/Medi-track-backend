@@ -29,13 +29,10 @@ export const createPrescription = async (req, res) => {
 // Patient gets prescriptions
 export const getPatientPrescriptions = async (req, res) => {
   try {
-    console.log("Logged-in user:", req.user);
     const prescriptions = await Prescription.find({
       patient: req.user.id,
     }).populate("doctor", "fullName")
       .sort({ createdAt: -1 });
-
-      console.log("Prescriptions found:", prescriptions);
 
    res.status(200).json({
       success: true,

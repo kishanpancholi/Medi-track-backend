@@ -139,7 +139,7 @@ export const updateAppointmentStatus = async (req, res) => {
 export const getAllAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find()
-      .populate("doctor", "fullName")   // get doctor name
+      .populate("doctor", "fullName specialization")   // get doctor name
       .populate("patient", "firstName lastName")  // get patient name
       .sort({ date: -1 });
 

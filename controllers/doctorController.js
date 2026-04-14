@@ -158,8 +158,8 @@ export const completeDoctorProfile = async (req, res) => {
         serviceType,
         isProfileComplete: true,
       },
-      { new: true, 
-        runValidators: true
+      { new: true, // returns updated document not old one
+        runValidators: true // it make sure that schema validations are applied during update
       }
     );
 

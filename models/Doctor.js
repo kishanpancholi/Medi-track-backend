@@ -2,7 +2,12 @@ import mongoose from "mongoose";
 
 const doctorSchema = new mongoose.Schema(
   {
-    fullName: { type: String, required: true },
+    // fullName: { type: String, required: true },
+    fullName: {type: String,required: true,trim: true,
+  set: (value) => {
+    // remove "Dr", "Dr.", "dr", etc.
+    return value.replace(/^dr\.?\s*/i, "").trim();
+  }},
     gender: { type: String },
     dob: { type: String },
     specialization: { type: String, required: true },

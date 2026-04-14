@@ -31,8 +31,10 @@ export const getPatientPrescriptions = async (req, res) => {
   try {
     const prescriptions = await Prescription.find({
       patient: req.user.id,
-    }).populate("doctor", "fullName specialization")
-      .sort({ createdAt: -1 });
+    })
+    .populate("patient", "firstName lastName")
+    .populate("doctor", "fullName specialization")
+    .sort({ createdAt: -1 });
 
    res.status(200).json({
       success: true,

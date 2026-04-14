@@ -99,7 +99,9 @@ export const loginDoctor = async (req,res) => {
 // Get all doctors (only name + id) get all doctors in dropdown
 export const getDoctorNames = async (req, res) => {
   try {
-    const doctors = await Doctor.find().select("fullName");
+    const doctors = await Doctor.find({
+      status: "approved", // ✅ ONLY approved doctors
+    }).select("fullName specialization");
 
     res.status(200).json(doctors);
   } catch (error) {

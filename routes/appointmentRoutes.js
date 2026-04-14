@@ -6,6 +6,7 @@ import { createAppointment,
         cancelAppointment,
         rescheduleAppointment,
         getDoctorDashboard,
+        getAvailableSlots,
         getBookedSlots} from "../controllers/appointmentController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
@@ -17,6 +18,7 @@ router.get("/doctor", protect, getDoctorAppointments); // get doctor appointment
 router.put("/:id", protect, updateAppointmentStatus); // update status /put
 router.get("/all", protect, getAllAppointments);// to get all appointments on admin side
 router.get("/booked-slot", getBookedSlots)
+router.get("/slots", getAvailableSlots);
 
 router.put("/:appointmentId/cancel", protect, authorize("patient"), cancelAppointment); // to cancel appointments by patients
 router.put("/:appointmentId/reschedule", protect, authorize("patient"), rescheduleAppointment); // to reschedule appointments by patients

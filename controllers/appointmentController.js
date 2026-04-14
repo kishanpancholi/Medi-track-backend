@@ -1,4 +1,5 @@
 import Appointment from "../models/Appointment.js";
+import Doctor from "../models/Doctor.js";
 
 // to create an appointment (stores an appointment in database)
 export const createAppointment = async (req, res) => {
@@ -6,7 +7,7 @@ export const createAppointment = async (req, res) => {
     const { doctor, patient, date, time } = req.body;
 
     const selectedDate = new Date(date);
-    selectedDate.setHours(12, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
 
     // 🔍 Check if slot already exists (ignore cancelled)
     const existingAppointment = await Appointment.findOne({
@@ -187,7 +188,7 @@ export const rescheduleAppointment = async (req, res) => {
     const patientId = req.user.id;
 
     const newDate = new Date(date);
-newDate.setHours(12, 0, 0, 0);
+    newDate.setHours(12, 0, 0, 0);
 
     const appointment = await Appointment.findById(appointmentId);
 
@@ -286,13 +287,85 @@ export const getDoctorDashboard = async (req, res) => {
   }
 };
 
+const generateTimeSlots = (startTime, endTime) => {
+  const slots = [];
+
+  let [startHour, startMin] = startTime.split(":").map(Number);
+  let [endHour, endMin] = endTime.split(":").map(Number);
+
+  let start = new Date();
+  start.setHours(startHour, startMin, 0, 0);
+
+  let end = new Date();
+  end.setHours(endHour, endMin, 0, 0);
+
+  while (start < end) {
+    let hours = start.getHours();
+    let minutes = start.getMinutes();
+
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+
+    const formatted =
+      `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${ampm}`;
+
+    slots.push(formatted);
+
+    start.setMinutes(start.getMinutes() + 30);
+  }
+
+  return slots;
+};
+
+export const getAvailableSlots = async (req, res) => {
+  try {
+    const { doctorId, date } = req.query;
+
+    const doctor = await Doctor.findById(doctorId);
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    const workingHours = doctor.workingHours[0]; // get first slot
+
+    const startTime = workingHours.start;
+    const endTime = workingHours.end;
+
+    const allSlots = generateTimeSlots(startTime, endTime);
+
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+
+    const appointments = await Appointment.find({
+      doctor: doctorId,
+      status: "approved",
+      date: { $gte: start, $lte: end },
+    });
+
+    const bookedSlots = appointments.map(app => app.time);
+
+    const availableSlots = allSlots.filter(
+      slot => !bookedSlots.includes(slot)
+    );
+
+    res.json({ allSlots, bookedSlots, availableSlots });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // ================== GET BOOKED SLOTS ==================
 export const getBookedSlots = async (req, res) => {
   try {
     const { doctorId, date } = req.query;
 
     const selectedDate = new Date(date);
-    selectedDate.setHours(12, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
 
     const appointments = await Appointment.find({
   doctor: doctorId,

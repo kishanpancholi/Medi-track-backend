@@ -2,6 +2,7 @@ import express from "express";
 import {
   registerPatient,
   loginPatient,
+  completePatientProfile,
   // getPatientCount,
   getPatients,
   // getTodayPatients,
@@ -10,13 +11,15 @@ import {
 } from "../controllers/patientController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
-import Patient from "../models/Patient.js";
 
 const router = express.Router();
 
 //Register & Login
 router.post("/register", registerPatient);
 router.post("/login", loginPatient);
+// Complete-Profile  
+router.put("/complete-profile", protect, authorize("patient"), completePatientProfile);
+
 router.post("/logout", logoutPatient);
 
 //Profile

@@ -78,6 +78,68 @@ export const loginPatient = async (req, res) => {
   }
 };
 
+export const completePatientProfile = async (req, res) => {
+  try {
+    const patientId = req.user.id;
+
+    const {
+      firstName,
+      lastName,
+      gender,
+      dob,
+      mobile,
+      email,
+      address,
+      city,
+      state,
+      pincode,
+      bloodGroup,
+      allergies,
+      diseases,
+      medications,
+      weight,
+      emergencyContact,
+    } = req.body;
+
+    const updatedPatient = await Patient.findByIdAndUpdate(
+      patientId,
+      {
+        firstName,
+        lastName,
+        gender,
+        dob,
+        mobile,
+        email,
+        address,
+        city,
+        state,
+        pincode,
+        bloodGroup,
+        allergies,
+        diseases,
+        medications,
+        weight,
+        emergencyContact,
+        isProfileComplete: true,
+      },
+      {
+        new: true, // returns updated document not old one
+        runValidators: true // it make sure that schema validations are applied during update
+      }
+    ).select("-password");
+
+    if (!updatedPatient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.status(200).json({
+      message: "Profile completed successfully",
+      patient: updatedPatient,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 // Add Patient Count
 // export const getPatientCount = async (req, res) => {
 //    try {

@@ -1,6 +1,7 @@
 import Appointment from "../models/Appointment.js";
 import Doctor from "../models/Doctor.js";
 
+//auto rejected matching appointment
 const autoRejectPastAppointments = async (appointments) => {
   const now = new Date();
 
@@ -373,12 +374,12 @@ export const getAvailableSlots = async (req, res) => {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
-    const workingHours = doctor.workingHours[0]; // get first slot
+    let allSlots = [];
 
-    const startTime = workingHours.start;
-    const endTime = workingHours.end;
-
-    const allSlots = generateTimeSlots(startTime, endTime);
+    doctor.workingHours.forEach(slot => {
+      const slots = generateTimeSlots(slot.start, slot.end);
+      allSlots.push(...slots);
+    });
 
     const start = new Date(date);
     start.setHours(0, 0, 0, 0);

@@ -1,13 +1,51 @@
 import Appointment from "../models/Appointment.js";
 import Doctor from "../models/Doctor.js";
 
+const autoRejectPastAppointments = async (appointments) => {
+  const now = new Date();
+
+  for (let appt of appointments) {
+    const appointmentDate = new Date(appt.date);
+
+    let hours = 0;
+    let minutes = 0;
+
+    if (appt.time) {
+      if (appt.time.includes("AM") || appt.time.includes("PM")) {
+        const [time, modifier] = appt.time.split(" ");
+        let [h, m] = time.split(":");
+
+        hours = parseInt(h);
+        minutes = parseInt(m);
+
+        if (modifier === "PM" && hours !== 12) hours += 12;
+        if (modifier === "AM" && hours === 12) hours = 0;
+      } else {
+        const [h, m] = appt.time.split(":");
+        hours = parseInt(h);
+        minutes = parseInt(m);
+      }
+    }
+
+    appointmentDate.setHours(hours, minutes, 0, 0);
+
+    // ✅ MAIN LOGIC
+    if (appointmentDate < now && appt.status === "pending") {
+      appt.status = "rejected";
+      await appt.save();
+    }
+  }
+};
+
 // to create an appointment (stores an appointment in database)
 export const createAppointment = async (req, res) => {
   try {
     const { doctor, patient, date, time } = req.body;
 
-    const selectedDate = new Date(date);
-    selectedDate.setHours(0, 0, 0, 0);
+    // const selectedDate = new Date(date);
+    // selectedDate.setHours(0, 0, 0, 0);
+
+    const selectedDate = new Date(`${date}T12:00:00`);
 
     // 🔍 Check if slot already exists (ignore cancelled)
     const existingAppointment = await Appointment.findOne({
@@ -60,6 +98,9 @@ export const getDoctorAppointments = async (req, res) => {
     const appointments = await Appointment.find({ doctor: doctorId })
       .populate("patient", "firstName lastName") // get patient name
       .sort({ date: 1 });
+
+    // ✅ AUTO REJECT PAST PENDING
+    await autoRejectPastAppointments(appointments);
 
     res.status(200).json(appointments);
   } catch (error) {
@@ -143,6 +184,9 @@ export const getAllAppointments = async (req, res) => {
       .populate("patient", "firstName lastName")  // get patient name
       .sort({ date: -1 });
 
+    // ✅ AUTO REJECT PAST PENDING
+    await autoRejectPastAppointments(appointments);
+
     res.status(200).json(appointments);
   } catch (error) {
     console.error(error);
@@ -187,8 +231,10 @@ export const rescheduleAppointment = async (req, res) => {
     const { date, time } = req.body;
     const patientId = req.user.id;
 
-    const newDate = new Date(date);
-    newDate.setHours(12, 0, 0, 0);
+    // const newDate = new Date(date);
+    // newDate.setHours(0, 0, 0, 0);
+
+    const newDate = new Date(`${date}T12:00:00`);
 
     const appointment = await Appointment.findById(appointmentId);
 

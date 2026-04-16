@@ -1,7 +1,7 @@
 import Appointment from "../models/Appointment.js";
 import Doctor from "../models/Doctor.js";
 
-//auto rejected matching appointment
+//auto rejected past appointment when appointment time is over
 const autoRejectPastAppointments = async (appointments) => {
   const now = new Date();
 
@@ -406,7 +406,7 @@ export const getAvailableSlots = async (req, res) => {
   }
 };
 
-// ================== GET BOOKED SLOTS ==================
+// GET BOOKED SLOTS 
 export const getBookedSlots = async (req, res) => {
   try {
     const { doctorId, date } = req.query;

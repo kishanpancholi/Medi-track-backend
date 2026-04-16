@@ -120,7 +120,6 @@ export const completeDoctorProfile = async (req, res) => {
       specialization,
       qualification,
       mobile,
-      profilePic,
       experience,
       licenseNumber,
       workingDays,
@@ -143,7 +142,6 @@ export const completeDoctorProfile = async (req, res) => {
         specialization,
         qualification,
         mobile,
-        profilePic,
         experience,
         licenseNumber,
         workingDays,
@@ -237,3 +235,18 @@ export const logoutDoctor = (req, res) => {
   res.status(200).json({ message: "Logout successful" });
 };
 
+//show male & female chart in doctot dashboard
+export const getGender = async (req,res) => {
+  try{
+    const maleCount = await Patient.countDocuments({gender:"male"});
+    const femaleCount = await Patient.countDocuments({gender:"female"});
+  
+  res.status(200).json({
+    male: maleCount,
+    female: femaleCount,
+  });
+
+  }catch(error){
+    res.status(500).json({message:"Server Error"});
+  }
+};

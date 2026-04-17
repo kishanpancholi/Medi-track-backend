@@ -7,6 +7,7 @@ import routes from "./routes/index.js";
 import cookieParser from "cookie-parser";
 import http from "http";
 import { Server } from "socket.io";
+import Appointment from "./models/Appointment.js";
 
 //database connection
 connectDB();
@@ -45,9 +46,36 @@ io.on("connection", (socket) => {
   console.log("User connected", socket.id);
 
   //room
-  socket.on("join-room", (roomId) => {
-    socket.join(roomId);
-    console.log(`User join room: ${roomId}`);
+  socket.on("join-room", async ({ roomId, userId, role }) => {
+    try {
+      // 🔍 Check appointment exists
+      const appointment = await Appointment.findById(roomId);
+
+      if (!appointment) {
+        console.log("Invalid appointment");
+        return;
+      }
+
+      // 🔒 Check user is doctor or patient of that appointment
+      if (
+        appointment.patient.toString() !== userId &&
+        appointment.doctor.toString() !== userId
+      ) {
+        console.log("Unauthorized user tried to join");
+        return;
+      }
+
+      // ✅ Allow join
+      socket.join(roomId);
+      console.log(`${role} (${userId}) joined room: ${roomId}`);
+
+      // ✅ Doctor control
+      if (role === "doctor") {
+        socket.to(roomId).emit("doctor-joined");
+      }
+    } catch (error) {
+      console.log("Join room error:", error);
+    }
   });
 
   // Offer
@@ -58,6 +86,16 @@ io.on("connection", (socket) => {
   // Answer
   socket.on("answer", ({ answer, roomId }) => {
     socket.to(roomId).emit("answer", answer);
+  });
+
+  //call start notification
+  socket.on("start-call", (roomId) => {
+    socket.to(roomId).emit("call-started");
+  });
+
+  //call end features
+  socket.on("end-call", (roomId) => {
+    socket.to(roomId).emit("call-ended");
   });
 
   // ICE Candidate

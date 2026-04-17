@@ -236,7 +236,7 @@ export const logoutDoctor = (req, res) => {
   res.status(200).json({ message: "Logout successful" });
 };
 
-//show male & female chart in doctot dashboard
+//show male & female chart in doctor dashboard
 export const getGender = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {

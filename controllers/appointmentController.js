@@ -362,7 +362,7 @@ const generateTimeSlots = (startTime, endTime) => {
 
   return slots;
 };
-
+// GET BOOKED SLOTS 
 export const getAvailableSlots = async (req, res) => {
   try {
     const { doctorId, date } = req.query;
@@ -372,6 +372,22 @@ export const getAvailableSlots = async (req, res) => {
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
+    // ✅ CHECK WORKING DAY
+const selectedDate = new Date(date);
+
+const dayName = selectedDate.toLocaleString("en-US", {
+  weekday: "long",
+});
+
+// If doctor is NOT working on that day → return empty slots
+if (!doctor.workingDays.includes(dayName)) {
+  return res.json({
+    allSlots: [],
+    bookedSlots: [],
+    availableSlots: [],
+    isWorkingDay: false, // ✅ ADD THIS
+  });
+}
 
     let allSlots = [];
 
@@ -405,7 +421,6 @@ export const getAvailableSlots = async (req, res) => {
   }
 };
 
-// GET BOOKED SLOTS 
 export const getBookedSlots = async (req, res) => {
   try {
     const { doctorId, date } = req.query;

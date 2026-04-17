@@ -257,14 +257,14 @@ export const rescheduleAppointment = async (req, res) => {
 
     // 🔍 Check if new slot already booked
     const existingAppointment = await Appointment.findOne({
-  doctor: appointment.doctor,
-  time,
-  status: "approved", // 🔥 IMPORTANT
-  date: {
-    $gte: newDate,
-    $lt: new Date(newDate.getTime() + 24 * 60 * 60 * 1000),
-  },
-});
+      doctor: appointment.doctor,
+      time,
+      status: "approved", // 🔥 IMPORTANT
+      date: {
+        $gte: newDate,
+        $lt: new Date(newDate.getTime() + 24 * 60 * 60 * 1000),
+      },
+    });
 
     if (existingAppointment) {
       return res.status(400).json({
@@ -316,16 +316,15 @@ export const getDoctorDashboard = async (req, res) => {
       date: { $gte: todayStart, $lte: todayEnd },
     });
 
-    const todayCompleted = await Appointment.countDocuments({
+    const totalCompleted = await Appointment.countDocuments({
       doctor: doctorId,
       status: "completed",
-      date: { $gte: todayStart, $lte: todayEnd },
     });
 
     res.status(200).json({
       totalPatients: totalPatients.length,
       todayPatients: todayPatients.length,
-      todayCompleted,
+      totalCompleted,
     });
 
   } catch (error) {

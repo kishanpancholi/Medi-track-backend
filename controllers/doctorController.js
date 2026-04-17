@@ -249,18 +249,22 @@ export const getGender = async (req, res) => {
       doctor: doctorId, // removed ObjectId conversion (safer)
     }).populate("patient", "gender");
 
-    let male = 0;
-    let female = 0;
-
+    const uniquePatients = new Map();
     appointments.forEach((appt) => {
-      if (appt.patient?.gender) {
-        const gender = appt.patient.gender.toLowerCase();
+      if (appt.patient) {
+        uniquePatients.set(appt.patient._id.toString(), appt.patient);      }
+    });
+
+    let male = 0;
+    let female = 0; 
+
+    uniquePatients.forEach((patient) => {
+      const gender = patient.gender?.toLowerCase();
 
         if (gender === "male") male++;
         if (gender === "female") female++;
-      }
     });
-
+    
     res.status(200).json({ male, female });
 
   } catch (error) {

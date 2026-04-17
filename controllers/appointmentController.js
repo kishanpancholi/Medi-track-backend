@@ -41,7 +41,7 @@ const autoRejectPastAppointments = async (appointments) => {
 // to create an appointment (stores an appointment in database)
 export const createAppointment = async (req, res) => {
   try {
-    const { doctor, patient, date, time } = req.body;
+    const { doctor, patient, date, time, type } = req.body;
 
     // const selectedDate = new Date(date);
     // selectedDate.setHours(0, 0, 0, 0);
@@ -70,6 +70,7 @@ export const createAppointment = async (req, res) => {
       patient,
       date: selectedDate,
       time,
+      type, 
     });
 
     res.status(201).json({

@@ -1,6 +1,7 @@
 import Doctor from "../models/Doctor.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Appointment from "../models/Appointment.js";
 
 export const registerDoctor = async (req, res) => {
   try {
@@ -236,17 +237,34 @@ export const logoutDoctor = (req, res) => {
 };
 
 //show male & female chart in doctot dashboard
-export const getGender = async (req,res) => {
-  try{
-    const maleCount = await Patient.countDocuments({gender:"male"});
-    const femaleCount = await Patient.countDocuments({gender:"female"});
-  
-  res.status(200).json({
-    male: maleCount,
-    female: femaleCount,
-  });
+export const getGender = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Unauthorized - No user" });
+    }
 
-  }catch(error){
-    res.status(500).json({message:"Server Error"});
+    const doctorId = req.user.id;
+
+    const appointments = await Appointment.find({
+      doctor: doctorId, // removed ObjectId conversion (safer)
+    }).populate("patient", "gender");
+
+    let male = 0;
+    let female = 0;
+
+    appointments.forEach((appt) => {
+      if (appt.patient?.gender) {
+        const gender = appt.patient.gender.toLowerCase();
+
+        if (gender === "male") male++;
+        if (gender === "female") female++;
+      }
+    });
+
+    res.status(200).json({ male, female });
+
+  } catch (error) {
+    console.log("Gender API Error:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };

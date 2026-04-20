@@ -49,31 +49,31 @@ io.on("connection", (socket) => {
   socket.on("join-room", async ({ roomId, userId, role }) => {
     try {
       // 🔍 Check appointment exists
-      const appointment = await Appointment.findById(roomId);
+      //const appointment = await Appointment.findById(roomId);
 
-      if (!appointment) {
-        console.log("Invalid appointment");
-        return;
-      }
+      // if (!appointment) {
+      //   console.log("Invalid appointment");
+      //   return;
+      // }
 
-      // 🔒 Check user is doctor or patient of that appointment
-      if (
-        appointment.patient.toString() !== userId &&
-        appointment.doctor.toString() !== userId
-      ) {
-        console.log("Unauthorized user tried to join");
-        return;
-      }
+      // // 🔒 Check user is doctor or patient of that appointment
+      // if (
+      //   appointment.patient.toString() !== userId &&
+      //   appointment.doctor.toString() !== userId
+      // ) {
+      //   console.log("Unauthorized user tried to join");
+      //   return;
+      // }
 
       // ✅ Allow join
       socket.join(roomId);
-      socket.to(roomId).emit("user-joined", { role });
       console.log(`${role} (${userId}) joined room: ${roomId}`);
+io.to(roomId).emit("user-joined", { role, userId });
 
       // ✅ Doctor control
-      if (role === "doctor") {
-        socket.to(roomId).emit("doctor-joined");
-      }
+      // if (role === "doctor") {
+      //   socket.to(roomId).emit("doctor-joined");
+      // }
     } catch (error) {
       console.log("Join room error:", error);
     }

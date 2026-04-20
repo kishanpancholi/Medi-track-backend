@@ -98,7 +98,7 @@ export const getDoctorAppointments = async (req, res) => {
     const doctorId = req.user.id; // logged-in doctor id
 
     const appointments = await Appointment.find({ doctor: doctorId })
-      .populate("patient", "firstName lastName") // get patient name
+      .populate("patient", "firstName lastName email mobile gender") // get patient name
       .sort({ date: 1 });
 
     // AUTO REJECT PAST PENDING

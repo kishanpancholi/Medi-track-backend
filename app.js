@@ -67,13 +67,13 @@ io.on("connection", (socket) => {
 
       // ✅ Allow join
       socket.join(roomId);
-      console.log(`${role} (${userId}) joined room: ${roomId}`);
 io.to(roomId).emit("user-joined", { role, userId });
+      console.log(`${role} (${userId}) joined room: ${roomId}`);
 
       // ✅ Doctor control
-      // if (role === "doctor") {
-      //   socket.to(roomId).emit("doctor-joined");
-      // }
+      if (role === "doctor") {
+        socket.to(roomId).emit("doctor-joined");
+      }
     } catch (error) {
       console.log("Join room error:", error);
     }

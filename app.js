@@ -67,6 +67,7 @@ io.on("connection", (socket) => {
 
       // ✅ Allow join
       socket.join(roomId);
+      socket.to(roomId).emit("user-joined", { role });
       console.log(`${role} (${userId}) joined room: ${roomId}`);
 
       // ✅ Doctor control
@@ -79,29 +80,42 @@ io.on("connection", (socket) => {
   });
 
   // Offer
-  socket.on("offer", ({ offer, roomId }) => {
-    socket.to(roomId).emit("offer", offer);
-  });
-
+  // socket.on("offer", ({ offer, roomId }) => {
+  //   socket.to(roomId).emit("offer", offer);
+  // });
+socket.on("offer", ({ offer, roomId }) => {
+  io.to(roomId).emit("offer", offer);
+});
   // Answer
-  socket.on("answer", ({ answer, roomId }) => {
-    socket.to(roomId).emit("answer", answer);
-  });
-
+  // socket.on("answer", ({ answer, roomId }) => {
+  //   socket.to(roomId).emit("answer", answer);
+  // });
+socket.on("answer", ({ answer, roomId }) => {
+  io.to(roomId).emit("answer", answer);
+});
   //call start notification
+  // socket.on("start-call", (roomId) => {
+  //   socket.to(roomId).emit("call-started");
+  // });
   socket.on("start-call", (roomId) => {
-    socket.to(roomId).emit("call-started");
-  });
+  io.to(roomId).emit("call-started");
+});
 
   //call end features
+  // socket.on("end-call", (roomId) => {
+  //   socket.to(roomId).emit("call-ended");
+  // });
   socket.on("end-call", (roomId) => {
-    socket.to(roomId).emit("call-ended");
-  });
+  io.to(roomId).emit("call-ended");
+});
 
   // ICE Candidate
+  // socket.on("ice-candidate", ({ candidate, roomId }) => {
+  //   socket.to(roomId).emit("ice-candidate", candidate);
+  // });
   socket.on("ice-candidate", ({ candidate, roomId }) => {
-    socket.to(roomId).emit("ice-candidate", candidate);
-  });
+  io.to(roomId).emit("ice-candidate", candidate);
+});
 
   // Disconnect
   socket.on("disconnect", () => {

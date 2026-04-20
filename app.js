@@ -84,8 +84,7 @@ io.to(roomId).emit("user-joined", { role, userId });
   //   socket.to(roomId).emit("offer", offer);
   // });
 socket.on("offer", ({ offer, roomId }) => {
-  io.to(roomId).emit("offer", offer);
-});
+socket.to(roomId).emit("offer", offer);});
   // Answer
   // socket.on("answer", ({ answer, roomId }) => {
   //   socket.to(roomId).emit("answer", answer);

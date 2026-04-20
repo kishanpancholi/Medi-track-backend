@@ -30,7 +30,7 @@ const autoRejectPastAppointments = async (appointments) => {
 
     appointmentDate.setHours(hours, minutes, 0, 0);
 
-    // ✅ MAIN LOGIC
+    // MAIN LOGIC
     if (appointmentDate < now && appt.status === "pending") {
       appt.status = "rejected";
       await appt.save();
@@ -52,7 +52,7 @@ export const createAppointment = async (req, res) => {
     const existingAppointment = await Appointment.findOne({
   doctor,
   time,
-  status: "approved", // 🔥 ONLY approved blocks slot
+  status: "approved", // ONLY approved blocks slot
   date: {
     $gte: selectedDate,
     $lt: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000),
@@ -81,7 +81,7 @@ export const createAppointment = async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    // 🔥 Handle duplicate key error (race condition)
+    // Handle duplicate key error (race condition)
     if (error.code === 11000) {
       return res.status(400).json({
         message: "This time slot is already booked",
@@ -101,13 +101,72 @@ export const getDoctorAppointments = async (req, res) => {
       .populate("patient", "firstName lastName") // get patient name
       .sort({ date: 1 });
 
-    // ✅ AUTO REJECT PAST PENDING
+    // AUTO REJECT PAST PENDING
     await autoRejectPastAppointments(appointments);
 
     res.status(200).json(appointments);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching appointments" });
+  }
+};
+
+// get today's appointments on doctor dashboard(only patient name + time)
+export const getTodayAppointments = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const appointments = await Appointment.find({
+      doctor: doctorId,
+      date: { $gte: todayStart, $lte: todayEnd },
+      status: "approved",
+    })
+      .populate("patient", "firstName lastName")
+      .select("time patient")
+      .sort({ time: 1 })
+      .limit(5);
+
+    // AUTO REJECT (reuse your logic)
+    await autoRejectPastAppointments(appointments);
+
+    const result = appointments.map((appt) => ({
+      _id: appt._id,
+      patientName: `${appt.patient.firstName} ${appt.patient.lastName}`,
+      time: appt.time,
+    }));
+
+    res.status(200).json(result);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching today appointments" });
+  }
+};
+
+export const completeAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const appointment = await Appointment.findById(id);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Not found" });
+    }
+
+    appointment.status = "completed"; // ONLY UPDATE STATUS
+    await appointment.save();
+
+    res.json({ message: "Appointment completed" });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -123,7 +182,7 @@ export const updateAppointmentStatus = async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    // 🔥 If approving, check existing approved slot
+    // If approving, check existing approved slot
     if (status === "approved") {
       const start = new Date(appointment.date);
       start.setHours(0, 0, 0, 0);
@@ -145,11 +204,11 @@ export const updateAppointmentStatus = async (req, res) => {
         });
       }
 
-      // ✅ Approve this appointment
+      // Approve this appointment
       appointment.status = "approved";
       await appointment.save();
 
-      // 🔥 AUTO REJECT OTHERS
+      // AUTO REJECT OTHERS
       await Appointment.updateMany(
         {
           doctor: appointment.doctor,
@@ -186,7 +245,7 @@ export const getAllAppointments = async (req, res) => {
       .populate("patient", "firstName lastName")  // get patient name
       .sort({ date: -1 });
 
-    // ✅ AUTO REJECT PAST PENDING
+    // AUTO REJECT PAST PENDING
     await autoRejectPastAppointments(appointments);
 
     res.status(200).json(appointments);
@@ -208,7 +267,7 @@ export const cancelAppointment = async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    // 🔒 check patient ownership
+    // check patient ownership
     if (appointment.patient.toString() !== patientId) {
       return res.status(403).json({ message: "Not authorized" });
     }
@@ -244,19 +303,19 @@ export const rescheduleAppointment = async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    // 🔒 check patient ownership
+    // check patient ownership
     if (appointment.patient.toString() !== patientId) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    // ❌ cannot reschedule cancelled/completed
+    // cannot reschedule cancelled/completed
     if (["cancelled", "completed"].includes(appointment.status)) {
       return res.status(400).json({
         message: "Cannot reschedule this appointment",
       });
     }
 
-    // 🔍 Check if new slot already booked
+    // Check if new slot already booked
     const existingAppointment = await Appointment.findOne({
       doctor: appointment.doctor,
       time,
@@ -373,7 +432,7 @@ export const getAvailableSlots = async (req, res) => {
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-    // ✅ CHECK WORKING DAY
+    // CHECK WORKING DAY
 const selectedDate = new Date(date);
 
 const dayName = selectedDate.toLocaleString("en-US", {
@@ -386,7 +445,7 @@ if (!doctor.workingDays.includes(dayName)) {
     allSlots: [],
     bookedSlots: [],
     availableSlots: [],
-    isWorkingDay: false, // ✅ ADD THIS
+    isWorkingDay: false, 
   });
 }
 
@@ -431,7 +490,7 @@ export const getBookedSlots = async (req, res) => {
 
     const appointments = await Appointment.find({
   doctor: doctorId,
-  status: "approved", // 🔥 only approved slots blocked
+  status: "approved", // only approved slots blocked
   date: {
     $gte: selectedDate,
     $lt: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000),

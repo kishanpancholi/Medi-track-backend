@@ -1,6 +1,8 @@
 import express from "express";
 import { createAppointment, 
         getDoctorAppointments, 
+        getTodayAppointments,
+        completeAppointment,
         updateAppointmentStatus, 
         getAllAppointments, 
         cancelAppointment,
@@ -19,6 +21,8 @@ router.put("/:id", protect, updateAppointmentStatus); // update status /put
 router.get("/all", protect, getAllAppointments);// to get all appointments on admin side
 router.get("/booked-slot", getBookedSlots)
 router.get("/slots", getAvailableSlots);
+router.get("/today", protect, getTodayAppointments);
+router.put("/complete/:id", protect, completeAppointment);
 
 router.put("/:appointmentId/cancel", protect, authorize("patient"), cancelAppointment); // to cancel appointments by patients
 router.put("/:appointmentId/reschedule", protect, authorize("patient"), rescheduleAppointment); // to reschedule appointments by patients

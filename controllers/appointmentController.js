@@ -505,3 +505,34 @@ export const getBookedSlots = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// GET PENDING APPOINTMENT REQUESTS (for doctor dashboard)
+export const getAppointmentRequests = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+
+    const requests = await Appointment.find({
+      doctor: doctorId,
+      status: "pending",
+    })
+      .populate("patient", "firstName lastName gender")
+      .sort({ createdAt: -1 });
+
+    // OPTIONAL: auto reject old ones
+    await autoRejectPastAppointments(requests);
+
+    const result = requests.map((appt) => ({
+      _id: appt._id,
+      patientName: `${appt.patient.firstName} ${appt.patient.lastName}`,
+      gender: appt.patient.gender,
+      date: appt.date,
+      time: appt.time,
+    }));
+
+    res.status(200).json(result);
+
+  } catch (error) {
+    console.log("Request Fetch Error:", error);
+    res.status(500).json({ message: "Error fetching requests" });
+  }
+};

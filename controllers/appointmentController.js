@@ -41,7 +41,7 @@ const autoRejectPastAppointments = async (appointments) => {
 // to create an appointment (stores an appointment in database)
 export const createAppointment = async (req, res) => {
   try {
-    const { doctor, patient, date, time, type } = req.body;
+    let { doctor, patient, date, time, type, meetingLink } = req.body;
 
     // const selectedDate = new Date(date);
     // selectedDate.setHours(0, 0, 0, 0);
@@ -65,12 +65,21 @@ export const createAppointment = async (req, res) => {
       });
     }
 
+    //  jitsi video link
+
+    if (type === "video") {
+      const roomName = `meditrack-${doctor}-${patient}-${Date.now()}`;
+      meetingLink = `https://meet.jit.si/${roomName}`;
+    }
+
+
     const appointment = await Appointment.create({
       doctor,
       patient,
       date: selectedDate,
       time,
       type, 
+      meetingLink,
     });
 
     res.status(201).json({
@@ -88,6 +97,29 @@ export const createAppointment = async (req, res) => {
       });
     }
 
+    res.status(500).json({ message: error.message });
+  }
+};
+// meeting details(video)
+export const getMeetingDetails = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // 👇 Role logic
+    const role = req.user.role; // "doctor" or "patient"
+
+    res.json({
+      meetingLink: appointment.meetingLink,
+      role
+    });
+
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
@@ -503,36 +535,5 @@ export const getBookedSlots = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ message: error.message });
-  }
-};
-
-// GET PENDING APPOINTMENT REQUESTS (for doctor dashboard)
-export const getAppointmentRequests = async (req, res) => {
-  try {
-    const doctorId = req.user.id;
-
-    const requests = await Appointment.find({
-      doctor: doctorId,
-      status: "pending",
-    })
-      .populate("patient", "firstName lastName gender")
-      .sort({ createdAt: -1 });
-
-    // OPTIONAL: auto reject old ones
-    await autoRejectPastAppointments(requests);
-
-    const result = requests.map((appt) => ({
-      _id: appt._id,
-      patientName: `${appt.patient.firstName} ${appt.patient.lastName}`,
-      gender: appt.patient.gender,
-      date: appt.date,
-      time: appt.time,
-    }));
-
-    res.status(200).json(result);
-
-  } catch (error) {
-    console.log("Request Fetch Error:", error);
-    res.status(500).json({ message: "Error fetching requests" });
   }
 };

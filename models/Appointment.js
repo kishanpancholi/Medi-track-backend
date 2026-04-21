@@ -28,7 +28,11 @@ const appointmentSchema = new mongoose.Schema({
     type: String,
     enum: ["pending", "approved", "rejected","completed","cancelled"],
     default: "pending", // automatic
-  }
+  },
+  meetingLink: {
+  type: String,
+  default: null,
+}
 }, { timestamps: true });
 
 export default mongoose.model("Appointment", appointmentSchema);

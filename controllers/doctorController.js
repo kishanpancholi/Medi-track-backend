@@ -101,8 +101,9 @@ export const loginDoctor = async (req,res) => {
 export const getDoctorNames = async (req, res) => {
   try {
     const doctors = await Doctor.find({
-      status: "approved", // ✅ ONLY approved doctors
-    }).select("fullName specialization");
+      status: "approved", 
+      isProfileComplete: true, 
+    }).select("fullName specialization serviceType");
 
     res.status(200).json(doctors);
   } catch (error) {

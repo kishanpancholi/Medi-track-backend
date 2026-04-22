@@ -65,14 +65,6 @@ export const createAppointment = async (req, res) => {
       });
     }
 
-    //  jitsi video link
-
-    if (type === "video") {
-      const roomName = `meditrack-${doctor}-${patient}-${Date.now()}`;
-      meetingLink = `https://meet.jit.si/${roomName}`;
-    }
-
-
     const appointment = await Appointment.create({
       doctor,
       patient,
@@ -81,6 +73,13 @@ export const createAppointment = async (req, res) => {
       type, 
       meetingLink,
     });
+    
+    if (type === "video") {
+  const roomName = `meditrack-${appointment._id}`;
+  appointment.meetingLink = `https://meet.jit.si/${roomName}`;
+
+  await appointment.save(); // save updated link
+}
 
     res.status(201).json({
       message: "Appointment booked successfully",

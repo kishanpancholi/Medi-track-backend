@@ -3,7 +3,7 @@ import doctorRoutes from "./doctorRoutes.js";
 import appointmentRoutes from "./appointmentRoutes.js";
 import adminRoutes from "./adminRoutes.js";
 import prescriptionRoutes from "./prescriptionRoutes.js";
-import reviewRoutes from "./reviewRoutes.js";
+import medicalRecordRoutes from "./medicalRecordRoutes.js";
 
 //routes
 const routes = (app) => {

@@ -32,9 +32,11 @@ const autoRejectPastAppointments = async (appointments) => {
 
     appointmentDate.setHours(hours, minutes, 0, 0);
 
-    if (appointmentDate < now && appt.status === "pending") {
-      appt.status = "rejected";
-      await appt.save();
+   if (appointmentDate < now && appt.status === "pending") {
+      await Appointment.updateOne(
+        { _id: appt._id },
+        { $set: { status: "rejected" } }
+      );
     }
   }
 };
@@ -135,7 +137,7 @@ export const createAppointment = async (req, res) => {
       meetingLink,
     });
     
-    if (type === "video") {
+    if (type === "videocall") {
   const roomName = `meditrack-${appointment._id}`;
   appointment.meetingLink = `https://meet.jit.si/${roomName}`;
 

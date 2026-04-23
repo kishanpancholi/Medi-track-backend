@@ -21,8 +21,8 @@ const appointmentSchema = new mongoose.Schema({
   },
   type: {
   type: String,
-  enum: ["physical", "video"],
-  default: "physical",
+  enum: ["physical", "videocall"],
+  // default: "physical",
 },
   status: {
     type: String,

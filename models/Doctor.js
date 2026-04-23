@@ -16,7 +16,7 @@ const doctorSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
     experience: { type: String, required: true },
-    licenseNumber: { type: String, required: true },
+    licenseNumber: { type: String, required: true, unique: true },
 
     workingDays: [{ type: String }],
     // workingHours: { type: String },

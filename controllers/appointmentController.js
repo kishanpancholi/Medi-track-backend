@@ -14,29 +14,85 @@ const autoRejectPastAppointments = async (appointments) => {
     if (appt.time) {
       if (appt.time.includes("AM") || appt.time.includes("PM")) {
         const [time, modifier] = appt.time.split(" ");
-        let [h, m] = time.split(":");
+        const [h, m] = time.split(":");
 
-        hours = parseInt(h);
-        minutes = parseInt(m);
+        hours = parseInt(h, 10);
+        minutes = parseInt(m, 10);
 
         if (modifier === "PM" && hours !== 12) hours += 12;
         if (modifier === "AM" && hours === 12) hours = 0;
       } else {
+        // ✅ FIXED PART
         const [h, m] = appt.time.split(":");
-        hours = parseInt(h);
-        minutes = parseInt(m);
+
+        hours = parseInt(h, 10);
+        minutes = parseInt(m, 10);
       }
     }
 
     appointmentDate.setHours(hours, minutes, 0, 0);
 
-    // MAIN LOGIC
     if (appointmentDate < now && appt.status === "pending") {
       appt.status = "rejected";
       await appt.save();
     }
   }
 };
+
+
+// Returns error h undefined 
+// const autoRejectPastAppointments = async (appointments) => {
+//   const now = new Date();
+
+//   for (let appt of appointments) {
+//     const appointmentDate = new Date(appt.date);
+
+//     let hours = 0;
+//     let minutes = 0;
+
+//     if (appt.time) {
+//       if (appt.time.includes("AM") || appt.time.includes("PM")) {
+//         const [time, modifier] = appt.time.split(" ");
+//         let [h, m] = time.split(":");
+
+//         hours = parseInt(h);
+//         minutes = parseInt(m);
+
+//         if (modifier === "PM" && hours !== 12) hours += 12;
+//         if (modifier === "AM" && hours === 12) hours = 0;
+//       } else {
+// const normalizeDateTime = (date, time) => {
+//   const d = new Date(date);
+//   let hours = 0;
+//   let minutes = 0;
+
+//   if (time.includes("AM") || time.includes("PM")) {
+//     const [t, mod] = time.split(" ");
+//     let [h, m] = t.split(":");
+
+//     hours = parseInt(h);
+//     minutes = parseInt(m);
+
+//     if (mod === "PM" && hours !== 12) hours += 12;
+//     if (mod === "AM" && hours === 12) hours = 0;
+//   }
+
+//   d.setHours(hours, minutes, 0, 0);
+//   return d;
+// };        hours = parseInt(h);
+//         minutes = parseInt(m);
+//       }
+//     }
+
+//     appointmentDate.setHours(hours, minutes, 0, 0);
+
+//     // MAIN LOGIC
+//     if (appointmentDate < now && appt.status === "pending") {
+//       appt.status = "rejected";
+//       await appt.save();
+//     }
+//   }
+// };
 
 // to create an appointment (stores an appointment in database)
 export const createAppointment = async (req, res) => {
@@ -47,16 +103,21 @@ export const createAppointment = async (req, res) => {
     // selectedDate.setHours(0, 0, 0, 0);
 
     const selectedDate = new Date(`${date}T12:00:00`);
+    const startOfDay = new Date(selectedDate);
+    startOfDay.setHours(0, 0, 0, 0);
 
+    const endOfDay = new Date(selectedDate);
+
+    endOfDay.setHours(23, 59, 59, 999);
     // 🔍 Check if slot already exists (ignore cancelled)
     const existingAppointment = await Appointment.findOne({
-  doctor,
-  time,
-  status: "approved", // ONLY approved blocks slot
+  doctor: doctor,
+  status: "approved",
   date: {
-    $gte: selectedDate,
-    $lt: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000),
+      $gte: startOfDay,
+      $lt: endOfDay,
   },
+  time,
 });
 
     if (existingAppointment) {
@@ -133,8 +194,12 @@ export const getDoctorAppointments = async (req, res) => {
       .sort({ date: 1 });
 
     // AUTO REJECT PAST PENDING
-    await autoRejectPastAppointments(appointments);
-
+    // await autoRejectPastAppointments(appointments);
+     try {
+      await autoRejectPastAppointments(appointments);
+    } catch (err) {
+      console.error("Auto reject error:", err);
+    }
     res.status(200).json(appointments);
   } catch (error) {
     console.error(error);
@@ -268,7 +333,7 @@ export const updateAppointmentStatus = async (req, res) => {
   }
 };
 
-// show appointments on admin side
+// show appointments on admin side, patient
 export const getAllAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find()
@@ -322,12 +387,19 @@ export const rescheduleAppointment = async (req, res) => {
     const { appointmentId } = req.params;
     const { date, time } = req.body;
     const patientId = req.user.id;
+    if (!date || !time) {
+      return res.status(400).json({
+        message: "Date and time are required",
+      });
+    }
 
     // const newDate = new Date(date);
     // newDate.setHours(0, 0, 0, 0);
 
+    // const newDate = new Date(`${date}T12:00:00`);
+        // const newDate = new Date(date);
+        //   newDate.setHours(0, 0, 0, 0);
     const newDate = new Date(`${date}T12:00:00`);
-
     const appointment = await Appointment.findById(appointmentId);
 
     if (!appointment) {

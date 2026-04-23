@@ -21,7 +21,7 @@ const patientSchema = new mongoose.Schema(
     allergies: { type: String },
     diseases: [{ type: String }], //array
     medications: { type: String },//current
-    weight: { type: Number },
+    weight: { type: String },
 
     // Emergency Contact
     emergencyContact: {

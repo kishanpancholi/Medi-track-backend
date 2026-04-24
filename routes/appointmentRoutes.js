@@ -10,7 +10,7 @@ import { createAppointment,
         rescheduleAppointment,
         getDoctorDashboard,
         getAvailableSlots,
-        getBookedSlots} from "../controllers/appointmentController.js";
+        getBookedSlots,getMyDoctors} from "../controllers/appointmentController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
 
@@ -29,4 +29,5 @@ router.put("/complete/:id", protect, completeAppointment);
 router.put("/:appointmentId/cancel", protect, authorize("patient"), cancelAppointment); // to cancel appointments by patients
 router.put("/:appointmentId/reschedule", protect, authorize("patient"), rescheduleAppointment); // to reschedule appointments by patients
 router.get("/dashboard", protect, getDoctorDashboard); // to get count on doctor side
+router.get("/mydoctors", protect, getMyDoctors);
 export default router;

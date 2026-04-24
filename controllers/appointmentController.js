@@ -612,18 +612,50 @@ export const getBookedSlots = async (req, res) => {
 };
 
 // display doctors on patient side who have appointments with patient in past or future (dropdown in upload record)
+// export const getMyDoctors = async (req, res) => {
+//   try {
+//     if (!req.user) {
+//       return res.status(401).json({ message: "Unauthorized" });
+//     }
+
+//     // ✅ correct field = patient
+//     const appointments = await Appointment.find({
+//       patient: req.user.id
+//     });
+
+//     // extract doctor IDs correctly
+//     const doctorIds = [
+//       ...new Set(
+//         appointments
+//           .map(a => a.doctor)
+//           .filter(Boolean)
+//           .map(id => id.toString())
+//       )
+//     ];
+
+//     const doctors = await Doctor.find({
+//       _id: { $in: doctorIds }
+//     }).select("fullName specialization");
+
+//     res.json(doctors);
+
+//   } catch (err) {
+//     console.error("ERROR:", err);
+//     res.status(500).json({ message: err.message });
+//   }
+// };
 export const getMyDoctors = async (req, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // ✅ correct field = patient
+    // 🔥 ONLY completed appointments
     const appointments = await Appointment.find({
-      patient: req.user.id
+      patient: req.user.id,
+      status: "completed"
     });
 
-    // extract doctor IDs correctly
     const doctorIds = [
       ...new Set(
         appointments

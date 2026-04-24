@@ -4,6 +4,7 @@ import {
   getPatientPrescriptions,
   getDoctorPrescriptions,
   getSinglePrescription,
+  getActivePrescriptions,
   updatePrescription,
   updateMedicineStatus,
   updatePrescriptionStatus,
@@ -23,6 +24,9 @@ router.get("/patient", protect, authorize("patient"), getPatientPrescriptions);
 
 // Doctor gets own prescriptions
 router.get("/doctor", protect, authorize("doctor"), getDoctorPrescriptions);
+
+// Get active prescriptions for patient - Quick Access
+router.get("/active", protect, authorize("patient"), getActivePrescriptions);
 
 // Get single prescription
 router.get("/:id", protect, getSinglePrescription);

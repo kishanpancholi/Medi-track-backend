@@ -4,7 +4,7 @@ import Doctor from "./Doctor.js";
 const reviewSchema =  new mongoose.Schema({
     doctor: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "doctor",
+        ref: "Doctor",
         required: true,
     },
     patient: {

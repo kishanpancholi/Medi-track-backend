@@ -201,3 +201,25 @@ export const deletePrescription = async (req, res) => {
     });
   }
 };
+// Get active prescriptions for patient - Quick Access Prescriptions
+export const getActivePrescriptions = async (req, res) => {
+  try {
+    const prescriptions = await Prescription.find({
+      patient: req.user.id,
+      pStatus: "active", // or status depending on your schema
+    })
+      .populate("doctor", "fullName specialization")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: prescriptions,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

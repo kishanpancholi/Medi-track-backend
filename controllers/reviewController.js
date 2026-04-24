@@ -31,3 +31,18 @@ export const getDoctorReviews = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const getAllReviews = async (req, res) => {
+  try {
+    const reviews = await Review.find()
+      .sort({ createdAt: -1 })
+      .limit(2)
+      .populate("patient", "firstName lastName")
+      .populate("doctor", "fullName specialization");
+
+    res.json(reviews);
+  } catch (error) {
+    console.log("REVIEW API ERROR:", error);
+    res.status(500).json({ message: error.message });
+  }
+};

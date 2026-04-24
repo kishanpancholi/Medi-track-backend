@@ -14,7 +14,7 @@ const medicalRecordSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["lab", "scan", "visit"],
+      enum: ["lab", "scan", "prescription"],
       required: true,
     },
     doctorName: {

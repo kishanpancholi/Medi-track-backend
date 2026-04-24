@@ -5,6 +5,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import routes from "./routes/index.js";
 import cookieParser from "cookie-parser";
+import cloudinary from "./config/cloudinary.js"; 
 
 //database connection
 connectDB();
@@ -26,6 +27,14 @@ routes(app);
 
 app.get("/", (req, res) => {
   res.send("Healthcare Backend Running...");
+});
+
+app.use((err, req, res, next) => {
+  console.error("GLOBAL ERROR:", err);
+
+  res.status(500).json({
+    message: "Internal Server Error",
+  });
 });
 
 const PORT = process.env.PORT || 5000;

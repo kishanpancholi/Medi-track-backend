@@ -1,12 +1,79 @@
 import MedicalRecord from "../models/MedicalRecord.js";
 
 // ➤ Create Record
+// export const createRecord = async (req, res) => {
+//   try {
+//     const record = await MedicalRecord.create(req.body);
+//     res.status(201).json(record);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 export const createRecord = async (req, res) => {
   try {
-    const record = await MedicalRecord.create(req.body);
-    res.status(201).json(record);
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+    console.log("USER:", req.user);
+
+    const userId = req.user?.id || req.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    const { title, type, doctorName, date, description } = req.body;
+
+    // 🔥 STRICT VALIDATION
+    if (!title || !type || !date) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    if (!["lab", "scan", "prescription"].includes(type)) {
+      return res.status(400).json({ message: "Invalid type" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: "File is required" });
+    }
+
+    const fileUrl =
+      req.file.path ||
+      req.file.secure_url ||
+      req.file.url;
+
+    if (!fileUrl) {
+      return res.status(400).json({ message: "File upload failed" });
+    }
+
+    // 🔥 FORCE VALID DATE
+    const safeDate = new Date(date);
+
+    if (isNaN(safeDate.getTime())) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    const record = await MedicalRecord.create({
+      patient: userId,
+      title: title.trim(),
+      type,
+      doctorName,
+      date: safeDate,
+      description,
+      fileUrl,
+      uploadedBy: "patient",
+    });
+
+    return res.status(201).json(record);
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.log("🔥 ERROR NAME:", error.name);
+    console.log("🔥 ERROR MESSAGE:", error.message);
+    console.log("🔥 FULL ERROR:", error);
+
+    return res.status(500).json({
+      message: error.message || "Server Error",
+    });
   }
 };
 
@@ -16,7 +83,11 @@ export const getPatientRecords = async (req, res) => {
     const { patientId } = req.params;
     const { search, type, page = 1, limit = 10 } = req.query;
 
-    let query = { patient: patientId };
+if (req.user.id !== patientId) {
+  return res.status(403).json({ message: "Unauthorized" });
+}
+
+let query = { patient: patientId };
 
     if (type && type !== "all") {
       query.type = type;
@@ -60,6 +131,22 @@ export const getRecordById = async (req, res) => {
 };
 
 // ➤ Delete Record
+// export const deleteRecord = async (req, res) => {
+//   try {
+//     const record = await MedicalRecord.findById(req.params.id);
+
+//     if (!record) {
+//       return res.status(404).json({ message: "Record not found" });
+//     }
+
+//     await record.deleteOne();
+
+//     res.json({ message: "Deleted successfully" });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 export const deleteRecord = async (req, res) => {
   try {
     const record = await MedicalRecord.findById(req.params.id);
@@ -68,9 +155,15 @@ export const deleteRecord = async (req, res) => {
       return res.status(404).json({ message: "Record not found" });
     }
 
+    // SECURITY CHECK
+    if (record.patient.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
     await record.deleteOne();
 
     res.json({ message: "Deleted successfully" });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

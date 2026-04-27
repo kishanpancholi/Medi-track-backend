@@ -19,14 +19,100 @@ export const addReview = async (req, res) => {
 };
 
 
-// GET /api/reviews/:doctorId
-export const getDoctorReviews = async (req, res) => {
+// GET /api/reviews/:doctorId - for doctor to see all reviews
+// export const getDoctorAllReviews = async (req, res) => {
+//   try {
+//     const reviews = await Review.find({
+//       doctor: req.params.doctorId,
+//     }).populate("patient", "name");
+
+//     res.json(reviews);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+export const getDoctorAllReviews = async (req, res) => {
   try {
     const reviews = await Review.find({
       doctor: req.params.doctorId,
-    }).populate("patient", "name");
+    }).populate("patient", "firstName lastName");
 
-    res.json(reviews);
+    // ✅ CALCULATIONS
+    const totalReviews = reviews.length;
+
+    const avgRating =
+      totalReviews > 0
+        ? (
+            reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+          ).toFixed(1)
+        : 0;
+
+    const ratingCount = {
+      5: reviews.filter((r) => r.rating === 5).length,
+      4: reviews.filter((r) => r.rating === 4).length,
+      3: reviews.filter((r) => r.rating === 3).length,
+      2: reviews.filter((r) => r.rating === 2).length,
+      1: reviews.filter((r) => r.rating === 1).length,
+    };
+
+    // ✅ FINAL RESPONSE (IMPORTANT)
+    res.json({
+      avgRating,
+      totalReviews,
+      ratingCount,
+      allReviews: reviews,
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /api/reviews/:doctorId - for doctor dashboard (summary + latest 3 reviews)
+export const getDoctorReviews = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+    const reviews = await Review.find({ doctor: doctorId })
+      .populate("patient", "firstName l")
+      .sort({ createdAt: -1 });
+
+    // ✅ total reviews
+    const totalReviews = reviews.length;
+
+    // ✅ average rating
+    const avgRating =
+      totalReviews === 0
+        ? 0
+        : (
+            reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+          ).toFixed(1);
+
+    // ✅ rating distribution
+    const ratingCount = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    };
+
+    reviews.forEach((r) => {
+      ratingCount[r.rating] += 1;
+    });
+
+    // ✅ latest 3 reviews
+    const latestReviews = reviews.slice(0, 3);
+
+    // ✅ response
+    res.json({
+      totalReviews,
+      avgRating,
+      ratingCount,
+      latestReviews,
+      allReviews: reviews, // for "view all"
+    });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -34,6 +120,7 @@ export const getDoctorReviews = async (req, res) => {
 
 export const getAllReviews = async (req, res) => {
   try {
+   // const doctorId = req.user.id; 
     const reviews = await Review.find()
       .sort({ createdAt: -1 })
       .limit(2)

@@ -387,7 +387,7 @@ export const cancelAppointment = async (req, res) => {
 export const rescheduleAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
-    const { date, time } = req.body;
+    const { date, time, type } = req.body;
     const patientId = req.user.id;
     if (!date || !time) {
       return res.status(400).json({
@@ -425,6 +425,7 @@ export const rescheduleAppointment = async (req, res) => {
       doctor: appointment.doctor,
       time,
       status: "approved", // 🔥 IMPORTANT
+      _id: { $ne: appointment._id },
       date: {
         $gte: newDate,
         $lt: new Date(newDate.getTime() + 24 * 60 * 60 * 1000),
@@ -439,7 +440,15 @@ export const rescheduleAppointment = async (req, res) => {
 
     appointment.date = newDate;
     appointment.time = time;
+    appointment.type = type || appointment.type;
     appointment.status = "pending";
+
+    if (appointment.type === "videocall") {
+  const roomName = `meditrack-${appointment._id}`;
+  appointment.meetingLink = `https://meet.jit.si/${roomName}`;
+} else {
+  appointment.meetingLink = null;
+}
 
     await appointment.save();
 

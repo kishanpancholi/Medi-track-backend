@@ -685,3 +685,34 @@ export const getMyDoctors = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// GET PENDING REQUESTS ON DOCTOR DASHBOARD
+export const getAppointmentRequests = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+
+    const requests = await Appointment.find({
+      doctor: doctorId,
+      status: "pending",
+    })
+      .populate("patient", "firstName lastName gender")
+      .sort({ createdAt: -1 });
+
+    // auto reject old pending
+    await autoRejectPastAppointments(requests);
+
+    const formatted = requests.map((appt) => ({
+      _id: appt._id,
+      patientName: `${appt.patient.firstName} ${appt.patient.lastName}`,
+      gender: appt.patient.gender,
+      date: appt.date,
+      time: appt.time,
+    }));
+
+    res.status(200).json(formatted);
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error fetching requests" });
+  }
+};

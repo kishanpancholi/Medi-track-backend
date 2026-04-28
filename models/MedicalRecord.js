@@ -7,6 +7,11 @@ const medicalRecordSchema = new mongoose.Schema(
       ref: "Patient",
       required: true,
     },
+    doctor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Doctor",
+      required: true,
+    },
     title: {
       type: String,
       required: true,
@@ -16,9 +21,6 @@ const medicalRecordSchema = new mongoose.Schema(
       type: String,
       enum: ["lab", "scan", "prescription"],
       required: true,
-    },
-    doctorName: {
-      type: String,
     },
     date: {
       type: Date,

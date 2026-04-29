@@ -191,81 +191,36 @@ const cookieOptions = {
   path: "/", // VERY IMPORTANT
 };
 
-// export const sendOtp = async (req, res) => {
-//   try {
-//     const { email } = req.body;
+export const getPatientProfile = async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.user.id).select("-password");
 
-//     const user = await Patient.findOne({ email });
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
 
-//     if (!user) {
-//       return res.status(404).json({ message: "Email not registered" });
-//     }
+    res.status(200).json({
+      message: "Patient Profile Fetched",
+      user: patient,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-//     const otp = Math.floor(1000 + Math.random() * 9000).toString();
+export const updatePatientProfile = async (req, res) => {
+  try {
+    const updated = await Patient.findByIdAndUpdate(
+      req.user.id,
+      req.body,
+      { new: true, runValidators: true }
+    ).select("-password");
 
-//     user.otp = otp;
-//     user.otpExpire = Date.now() + 5 * 60 * 1000;
-//     await user.save();
-
-//     console.log("OTP:", otp); // for testing
-
-//     // ✅ USE YOUR FUNCTION HERE
-//     await sendEmail(
-//       email,
-//       "OTP Verification",
-//       `Your OTP is ${otp}`
-//     );
-
-//     res.json({ message: "OTP sent successfully" });
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Error sending OTP" });
-//   }
-// };
-
-// export const verifyOtp = async (req, res) => {
-//   const { email, otp, password } = req.body;
-
-//   const user = await Patient.findOne({ email });
-
-//   // Check OTP
-//   if (!user || user.otp !== otp) {
-//     return res.status(400).json({ message: "Invalid OTP" });
-//   }
-
-//   // Check Expiry
-//   if (user.otpExpire < Date.now()) {
-//     return res.status(400).json({ message: "OTP expired" });
-//   }
-
-//   res.json({ message: "OTP verified" });
-// };
-
-// export const resetPassword = async (req, res) => {
-//   const { email, otp, password } = req.body;
-
-//   const user = await Patient.findOne({ email });
-
-//   if (!user || user.otp !== otp) {
-//     return res.status(400).json({ message: "Invalid OTP" });
-//   }
-
-//   if (user.otpExpire < Date.now()) {
-//     return res.status(400).json({ message: "OTP expired" });
-//   }
-
-//   // hash new password
-//   user.password = await bcrypt.hash(password, 10);
-
-//   // clear OTP
-//   user.otp = null;
-//   user.otpExpire = null;
-
-//   await user.save();
-
-//   res.json({ message: "Password reset successful" });
-// };
+    res.json({ patient: updated });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 export const sendOtp = async (req, res) => {
   try {

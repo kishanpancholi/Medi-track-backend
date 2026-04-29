@@ -214,7 +214,7 @@ export const getDoctorPatients = async (req, res) => {
       doctor: doctorId
     }).select("patient");
 
-    console.log("Records Found:", records);
+    // console.log("Records Found:", records);
 
     const patientIds = [
       ...new Set(

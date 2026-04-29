@@ -33,6 +33,9 @@ const doctorSchema = new mongoose.Schema(
     state: { type: String },
     mapLink: { type: String },
 
+    otp: { type: String },
+    otpExpire: { type: Date },
+
     about: { type: String },
     emergencyContact: { type: String },
     status: {

@@ -2,6 +2,7 @@ import Doctor from "../models/Doctor.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Appointment from "../models/Appointment.js";
+import { sendOtpService, verifyOtpService, resetPasswordService } from "../utils/forgotPassword.js";
 
 export const registerDoctor = async (req, res) => {
   try {
@@ -245,10 +246,6 @@ const cookieOptions = {
   path: "/", // VERY IMPORTANT
 };
 
-export const logoutDoctor = (req, res) => {
-  res.clearCookie("token", cookieOptions);
-  res.status(200).json({ message: "Logout successful" });
-};
 
 //show male & female chart in doctor dashboard
 export const getGender = async (req, res) => {
@@ -256,13 +253,13 @@ export const getGender = async (req, res) => {
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: "Unauthorized - No user" });
     }
-
+    
     const doctorId = req.user.id;
-
+    
     const appointments = await Appointment.find({
       doctor: doctorId, // removed ObjectId conversion (safer)
     }).populate("patient", "gender");
-
+    
     const uniquePatients = new Map();
     appointments.forEach((appt) => {
       if (appt.patient) {
@@ -279,7 +276,7 @@ export const getGender = async (req, res) => {
       if (gender === "male") male++;
       if (gender === "female") female++;
     });
-
+    
     res.status(200).json({ male, female });
 
   } catch (error) {
@@ -296,11 +293,11 @@ export const getDoctorProfileFull = async (req, res) => {
     }
 
     const doctor = await Doctor.findById(req.user.id).select("-password");
-
+    
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-
+    
     res.status(200).json({
       success: true,
       user: doctor,
@@ -309,4 +306,42 @@ export const getDoctorProfileFull = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+export const sendOtpDoctor = async (req, res) => {
+  try {
+    await sendOtpService(Doctor, req.body.email);
+    res.json({ message: "OTP sent" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+export const verifyOtpDoctor = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    await verifyOtpService(Doctor, email, otp);
+
+    res.json({ message: "OTP verified" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+export const resetPasswordDoctor = async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+
+    await resetPasswordService(Doctor, email, otp, password);
+
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+export const logoutDoctor = (req, res) => {
+  res.clearCookie("token", cookieOptions);
+  res.status(200).json({ message: "Logout successful" });
 };

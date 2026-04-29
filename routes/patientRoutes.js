@@ -6,6 +6,9 @@ import {
   getPatients,
   deletePatient,
   logoutPatient,
+  sendOtp,
+  verifyOtp,
+  resetPassword,
 } from "../controllers/patientController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
@@ -18,6 +21,9 @@ router.post("/login", loginPatient);
 // Complete-Profile  
 router.put("/complete-profile", protect, authorize("patient"), completePatientProfile);
 
+router.post("/send-otp", sendOtp);
+router.post("/verify-otp", verifyOtp);
+router.post("/reset-password", resetPassword);
 router.post("/logout", logoutPatient);
 
 router.get("/profile", protect, authorize("patient"), (req, res) => {

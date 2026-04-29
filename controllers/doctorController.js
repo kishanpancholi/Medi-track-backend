@@ -288,6 +288,7 @@ export const getGender = async (req, res) => {
   }
 };
 
+// to update doctor profile
 export const getDoctorProfileFull = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {

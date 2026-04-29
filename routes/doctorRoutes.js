@@ -8,6 +8,7 @@ import {
   getAllDoctor,
   updateDoctorStatus,
   getGender,
+  getDoctorProfileFull,
 } from "../controllers/doctorController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
@@ -17,12 +18,13 @@ const router = express.Router();
 router.post("/register", registerDoctor);
 router.post("/login", loginDoctor);
 router.post("/logout", logoutDoctor);
-router.post("/complete-profile",protect,authorize("doctor"),completeDoctorProfile,);
+router.post("/complete-profile", protect, authorize("doctor"), completeDoctorProfile,); // complete doctor profile
 
 router.get("/names", getDoctorNames); // get all doctors in dropdown
 router.get("/all", getAllDoctor); // get all doctor in admin side doc page
 router.put("/:doctorId/status", protect, authorize("admin"), updateDoctorStatus); // doctor approve or reject by admin 
-router.get("/gender", protect, getGender)
+router.get("/gender", protect, getGender);
+router.get("/profile-full", protect, authorize("doctor"), getDoctorProfileFull); // api for update doctor profile
 
 router.get("/profile", protect, authorize("doctor"), (req, res) => {
   res.status(200).json({

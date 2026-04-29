@@ -43,14 +43,14 @@ export const registerDoctor = async (req, res) => {
 };
 
 //Doctor login 
-export const loginDoctor = async (req,res) => {
-  try{
-    const {email, password} = req.body;
+export const loginDoctor = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-    const doc = await Doctor.findOne({email});
+    const doc = await Doctor.findOne({ email });
 
-    if(!doc){
-      return res.status(400).json({message:"Email Not Registerd"});
+    if (!doc) {
+      return res.status(400).json({ message: "Email Not Registerd" });
     }
 
     // if admin will not approved it will show this msg to doctor
@@ -61,38 +61,38 @@ export const loginDoctor = async (req,res) => {
     } */
 
     const isMatch = await bcrypt.compare(password, doc.password);
-    if(!isMatch){
+    if (!isMatch) {
       return res.status(400).json({ message: "Incorrect Password" });
     }
 
     //create a json token
     const token = jwt.sign(
-      {id:doc._id, role:"doctor"},
+      { id: doc._id, role: "doctor" },
       process.env.JWT_SECRET,
-      {expiresIn: "1d"},
+      { expiresIn: "1d" },
     );
 
-   //STORE TOKEN IN COOKIE
+    //STORE TOKEN IN COOKIE
     res.cookie("token", token, {
       httpOnly: true,
       secure: true, // true in production (HTTPS)
       path: "/",
       sameSite: "None",
-      maxAge: 24 * 60 * 60 *1000, // 1 day
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
 
     res.status(200).json({
       message: "Login Successful",
       doc,
       token,
-      doctor:{
+      doctor: {
         id: doc._id,
         fullName: doc.fullName,
         email: doc.email,
         isProfileComplete: doc.isProfileComplete,
       }
     });
-  }catch (err) {
+  } catch (err) {
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -101,8 +101,8 @@ export const loginDoctor = async (req,res) => {
 export const getDoctorNames = async (req, res) => {
   try {
     const doctors = await Doctor.find({
-      status: "approved", 
-      isProfileComplete: true, 
+      status: "approved",
+      isProfileComplete: true,
     }).select("fullName specialization serviceType");
 
     res.status(200).json(doctors);
@@ -114,9 +114,15 @@ export const getDoctorNames = async (req, res) => {
 
 export const completeDoctorProfile = async (req, res) => {
   try {
+
+    // ✅ check auth
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const doctorId = req.user.id;
 
     const {
+      fullName,
       gender,
       dob,
       specialization,
@@ -139,6 +145,7 @@ export const completeDoctorProfile = async (req, res) => {
     const updatedDoctor = await Doctor.findByIdAndUpdate(
       doctorId,
       {
+        fullName,
         gender,
         dob,
         specialization,
@@ -158,12 +165,18 @@ export const completeDoctorProfile = async (req, res) => {
         serviceType,
         isProfileComplete: true,
       },
-      { new: true, // returns updated document not old one
+      {
+        new: true, // returns updated document not old one
         runValidators: true // it make sure that schema validations are applied during update
       }
     );
 
+    if (!updatedDoctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
     res.status(200).json({
+      success: true,
       message: "Profile completed successfully",
       doctor: updatedDoctor,
     });
@@ -253,23 +266,47 @@ export const getGender = async (req, res) => {
     const uniquePatients = new Map();
     appointments.forEach((appt) => {
       if (appt.patient) {
-        uniquePatients.set(appt.patient._id.toString(), appt.patient);      }
+        uniquePatients.set(appt.patient._id.toString(), appt.patient);
+      }
     });
 
     let male = 0;
-    let female = 0; 
+    let female = 0;
 
     uniquePatients.forEach((patient) => {
       const gender = patient.gender?.toLowerCase();
 
-        if (gender === "male") male++;
-        if (gender === "female") female++;
+      if (gender === "male") male++;
+      if (gender === "female") female++;
     });
-    
+
     res.status(200).json({ male, female });
 
   } catch (error) {
     console.log("Gender API Error:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+// to update doctor profile
+export const getDoctorProfileFull = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const doctor = await Doctor.findById(req.user.id).select("-password");
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: doctor,
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

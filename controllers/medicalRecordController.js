@@ -13,10 +13,6 @@ import Patient from "../models/Patient.js";
 
 export const createRecord = async (req, res) => {
   try {
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
-    console.log("USER:", req.user);
-
     const userId = req.user?.id || req.user?._id;
 
     if (!userId) {
@@ -25,7 +21,6 @@ export const createRecord = async (req, res) => {
 
     const { title, type, doctorId, date, description } = req.body;
 
-    // 🔥 STRICT VALIDATION
     if (!title || !type || !date) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -38,15 +33,12 @@ export const createRecord = async (req, res) => {
       return res.status(400).json({ message: "File is required" });
     }
 
-    const fileUrl = req.file?.path;
+    console.log("UPLOAD DEBUG:", req.file); // 🔥 ADD THIS
 
-    if (!fileUrl) {
-      return res.status(400).json({ message: "File upload failed" });
-    }
-    console.log("CLOUDINARY FILE:", req.file);
-    // 🔥 FORCE VALID DATE
+    const fileUrl = req.file.path; // ✅ NO CHANGE
+    const fileName = req.file.originalname;
+
     const safeDate = new Date(date);
-
     if (isNaN(safeDate.getTime())) {
       return res.status(400).json({ message: "Invalid date format" });
     }
@@ -59,16 +51,14 @@ export const createRecord = async (req, res) => {
       date: safeDate,
       description,
       fileUrl,
+      fileName,
       uploadedBy: "patient",
     });
 
     return res.status(201).json(record);
 
   } catch (error) {
-    console.log("🔥 ERROR NAME:", error.name);
-    console.log("🔥 ERROR MESSAGE:", error.message);
-    console.log("🔥 FULL ERROR:", error);
-
+    console.log(error);
     return res.status(500).json({
       message: error.message || "Server Error",
     });

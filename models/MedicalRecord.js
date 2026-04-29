@@ -28,11 +28,14 @@ const medicalRecordSchema = new mongoose.Schema(
     },
     description: String,
     fileUrl: String,
-    uploadedBy: {
-      type: String,
-      enum: ["patient", "doctor"],
-      default: "patient",
-    },
+    // uploadedBy: {
+    //   type: String,
+    //   enum: ["patient", "doctor"],
+    //   default: "patient",
+    // },
+    // fileUrl: String,
+    fileName: String,   // ✅ ADD THIS
+    fileType: String,   // optional but useful
   },
   { timestamps: true }
 );

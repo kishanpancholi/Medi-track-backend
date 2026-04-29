@@ -22,14 +22,14 @@ import cloudinary from "../config/cloudinary.js";
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-    const isPDF = file.mimetype === "application/pdf";
+    const originalName = file.originalname
+      .replace(/\.[^/.]+$/, "") // ✅ remove extension
+      .replace(/\s+/g, "_");    // clean spaces
 
     return {
       folder: "medical-records",
-      resource_type: isPDF ? "raw" : "image", // 🔥 FORCE FIX
-      public_id: `${Date.now()}-${file.originalname
-        .split(".")[0]
-        .replace(/\s+/g, "_")}`, // clean name
+      resource_type: "auto",
+      public_id: `${Date.now()}-${originalName}`, // ✅ clean name
     };
   },
 });

@@ -57,6 +57,30 @@ export const notificationMessages = {
     title: "Record Reviewed",
     message: `Dr. ${doctor} reviewed your medical record`,
   }),
+prescription_added: (doctor) => ({
+  title: "New Prescription",
+  message: `Dr. ${doctor} added a new prescription for you`,
+}),
+
+prescription_updated: (doctor) => ({
+  title: "Prescription Updated",
+  message: `Dr. ${doctor} updated your prescription`,
+}),
+
+prescription_status_updated: (doctor, status) => ({
+  title: "Prescription Status Updated",
+  message: `Dr. ${doctor} marked your prescription as ${status}`,
+}),
+
+medicine_status_updated_patient: (medicine) => ({
+  title: "Medicine Updated",
+  message: `You marked ${medicine} as taken`,
+}),
+
+medicine_status_updated_doctor: (patient, medicine) => ({
+  title: "Medicine Update",
+  message: `${patient} marked ${medicine} as taken`,
+}),
 
   // ⭐ Review Added (Patient → Doctor)
   review_added: (patient) => ({

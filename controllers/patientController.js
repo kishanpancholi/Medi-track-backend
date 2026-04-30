@@ -165,6 +165,7 @@ export const getPatients = async (req, res) => {
       phone: p.mobile,
       email: p.email,
       address: p.address,
+      city: p.city,
       createdAt: p.createdAt,
     }));
 

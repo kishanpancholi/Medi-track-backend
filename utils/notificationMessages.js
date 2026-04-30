@@ -83,8 +83,8 @@ medicine_status_updated_doctor: (patient, medicine) => ({
 }),
 
   // ⭐ Review Added (Patient → Doctor)
-  review_added: (patient) => ({
-    title: "New Review",
-    message: `${patient} added a new review`,
-  }),
+ review_added: (patient, rating) => ({
+  title: "New Review",
+  message: `${patient} gave you a ${rating}★ review`,
+}),
 };

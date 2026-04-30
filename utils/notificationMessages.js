@@ -10,6 +10,11 @@ export const notificationMessages = {
     title: "Appointment Booked",
     message: `Your appointment request is sent to Dr. ${doctor}`,
   }),
+  // 📅 New appointment request (for doctor)
+   appointment_request: (patient) => ({
+    title: "New Appointment Request",
+    message: `You have an appointment request from ${patient}`,
+  }),
 
   // ✅ Appointment confirmed
   appointment_confirmed: (doctor) => ({

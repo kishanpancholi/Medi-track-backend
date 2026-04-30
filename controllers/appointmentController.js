@@ -1,5 +1,7 @@
 import Appointment from "../models/Appointment.js";
 import Doctor from "../models/Doctor.js";
+import { sendNotification } from "../utils/sendNotification.js";
+import { notificationMessages } from "../utils/notificationMessages.js";
 
 //auto rejected past appointment when appointment time is over
 const autoRejectPastAppointments = async (appointments) => {
@@ -37,6 +39,19 @@ const autoRejectPastAppointments = async (appointments) => {
         { _id: appt._id },
         { $set: { status: "rejected" } }
       );
+      const doctorData = await Doctor.findById(appt.doctor);
+
+const { title, message } =
+  notificationMessages.appointment_rejected(doctorData.fullName);
+
+await sendNotification({
+  userId: appt.patient,
+  role: "Patient",
+  type: "appointment_rejected",
+  title,
+  message,
+  link: "/PatientAppointment",
+});
     }
   }
 };
@@ -88,6 +103,35 @@ export const createAppointment = async (req, res) => {
 
       await appointment.save(); // save updated link
     }
+    const doctorData = await Doctor.findById(appointment.doctor);
+
+// 🔹 Patient notification
+const { title: patientTitle, message: patientMessage } =
+  notificationMessages.appointment_booked(doctorData.fullName);
+
+await sendNotification({
+  userId: appointment.patient,      // ✅ FIXED
+  role: "Patient",                  // ✅ FIXED
+  type: "appointment_booked",
+  title: patientTitle,
+  message: patientMessage,
+  link: "/PatientAppointment",
+});
+
+// 🔹 Doctor notification
+const patientName = req.user.firstName || "Patient";
+
+const { title: doctorTitle, message: doctorMessage } =
+  notificationMessages.appointment_request(patientName);
+
+await sendNotification({
+  userId: appointment.doctor,
+  role: "Doctor",                   // ✅ FIXED
+  type: "appointment_request",
+  title: doctorTitle,
+  message: doctorMessage,
+  link: "/doctor/appointments",
+});
 
     res.status(201).json({
       message: "Appointment booked successfully",
@@ -205,6 +249,19 @@ export const completeAppointment = async (req, res) => {
 
     appointment.status = "completed"; // ONLY UPDATE STATUS
     await appointment.save();
+    const doctorData = await Doctor.findById(appointment.doctor);
+
+    const { title, message } =
+      notificationMessages.appointment_completed(doctorData.fullName);
+
+    await sendNotification({
+      userId: appointment.patient,
+      role: "Patient",
+      type: "appointment_completed",
+      title,
+      message,
+      link: "/PatientAppointment",
+    });
 
     res.json({ message: "Appointment completed" });
 
@@ -251,8 +308,28 @@ export const updateAppointmentStatus = async (req, res) => {
       // Approve this appointment
       appointment.status = "approved";
       await appointment.save();
+      const doctorData = await Doctor.findById(appointment.doctor);
+
+      const { title, message } =
+        notificationMessages.appointment_confirmed(doctorData.fullName);
+
+      await sendNotification({
+        userId: appointment.patient,
+        role: "Patient",
+        type: "appointment_approved",
+        title,
+        message,
+        link: "/PatientAppointment",
+      });
 
       // AUTO REJECT OTHERS
+      const rejectedAppointments = await Appointment.find({
+  doctor: appointment.doctor,
+  time: appointment.time,
+  date: appointment.date,
+  status: "pending",
+  _id: { $ne: appointment._id },
+});
       await Appointment.updateMany(
         {
           doctor: appointment.doctor,
@@ -263,11 +340,40 @@ export const updateAppointmentStatus = async (req, res) => {
         },
         { status: "rejected" }
       );
+for (const appt of rejectedAppointments) {
+  const doctorData = await Doctor.findById(appt.doctor);
 
+  const { title, message } =
+    notificationMessages.appointment_rejected(doctorData.fullName);
+
+  await sendNotification({
+    userId: appt.patient,
+    role: "Patient",
+    type: "appointment_rejected",
+    title,
+    message,
+    link: "/PatientAppointment",
+  });
+}
     } else {
-      // Normal update (rejected / completed / cancelled)
       appointment.status = status;
       await appointment.save();
+
+      if (status === "rejected") {
+        const doctorData = await Doctor.findById(appointment.doctor);
+
+        const { title, message } =
+          notificationMessages.appointment_rejected(doctorData.fullName);
+
+        await sendNotification({
+          userId: appointment.patient,
+          role: "Patient",
+          type: "appointment_rejected",
+          title,
+          message,
+          link: "/PatientAppointment",
+        });
+      }
     }
 
     res.status(200).json({
@@ -318,7 +424,19 @@ export const cancelAppointment = async (req, res) => {
 
     appointment.status = "cancelled";
     await appointment.save();
+    const patientName = req.user.firstName || "Patient";
 
+    const { title, message } =
+      notificationMessages.appointment_cancelled(patientName);
+
+    await sendNotification({
+      userId: appointment.doctor,
+      role: "Doctor",
+      type: "appointment_cancelled",
+      title,
+      message,
+      link: "/doctor/appointments",
+    });
     res.status(200).json({
       message: "Appointment cancelled successfully",
       appointment,
@@ -397,7 +515,19 @@ export const rescheduleAppointment = async (req, res) => {
     }
 
     await appointment.save();
+    const { title, message } =
+  notificationMessages.appointment_rescheduled(
+    `${date} at ${time}`
+  );
 
+await sendNotification({
+  userId: appointment.doctor,
+  role: "Doctor",
+  type: "appointment_rescheduled",
+  title,
+  message,
+  link: "/doctor/appointments",
+});
     res.status(200).json({
       message: "Appointment rescheduled successfully",
       appointment,

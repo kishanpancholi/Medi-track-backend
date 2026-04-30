@@ -30,3 +30,17 @@ export const markAsRead = async (req, res) => {
     res.status(500).json({ message: "Error updating notification" });
   }
 };
+export const getUnreadCount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const count = await Notification.countDocuments({
+      userId,
+      isRead: false,
+    });
+
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching count" });
+  }
+};

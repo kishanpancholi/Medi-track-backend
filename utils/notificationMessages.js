@@ -11,7 +11,7 @@ export const notificationMessages = {
     message: `Your appointment request is sent to Dr. ${doctor}`,
   }),
   // 📅 New appointment request (for doctor)
-   appointment_request: (patient) => ({
+  appointment_request: (patient) => ({
     title: "New Appointment Request",
     message: `You have an appointment request from ${patient}`,
   }),
@@ -44,5 +44,23 @@ export const notificationMessages = {
   appointment_completed: (doctor) => ({
     title: "Appointment Completed",
     message: `Your appointment with Dr. ${doctor} is completed`,
+  }),
+
+  // 📄 Medical Record Uploaded (Patient → Doctor)
+  record_uploaded: (patient) => ({
+    title: "New Medical Record",
+    message: `${patient} uploaded a new medical record`,
+  }),
+
+  // 📄 Medical Record Reviewed (Doctor → Patient) (optional but useful)
+  record_reviewed: (doctor) => ({
+    title: "Record Reviewed",
+    message: `Dr. ${doctor} reviewed your medical record`,
+  }),
+
+  // ⭐ Review Added (Patient → Doctor)
+  review_added: (patient) => ({
+    title: "New Review",
+    message: `${patient} added a new review`,
   }),
 };

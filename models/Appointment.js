@@ -20,19 +20,19 @@ const appointmentSchema = new mongoose.Schema({
     required: true,
   },
   type: {
-  type: String,
-  enum: ["physical", "videocall"],
-  // default: "physical",
-},
+    type: String,
+    enum: ["physical", "videocall"],
+    // default: "physical",
+  },
   status: {
     type: String,
-    enum: ["pending", "approved", "rejected","completed","cancelled"],
+    enum: ["pending", "approved", "rejected", "completed", "cancelled"],
     default: "pending", // automatic
   },
   meetingLink: {
-  type: String,
-  default: null,
-}
+    type: String,
+    default: null,
+  }
 }, { timestamps: true });
 
 export default mongoose.model("Appointment", appointmentSchema);

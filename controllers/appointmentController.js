@@ -32,7 +32,7 @@ const autoRejectPastAppointments = async (appointments) => {
 
     appointmentDate.setHours(hours, minutes, 0, 0);
 
-   if (appointmentDate < now && appt.status === "pending") {
+    if (appointmentDate < now && appt.status === "pending") {
       await Appointment.updateOne(
         { _id: appt._id },
         { $set: { status: "rejected" } }
@@ -40,61 +40,6 @@ const autoRejectPastAppointments = async (appointments) => {
     }
   }
 };
-
-
-// Returns error h undefined 
-// const autoRejectPastAppointments = async (appointments) => {
-//   const now = new Date();
-
-//   for (let appt of appointments) {
-//     const appointmentDate = new Date(appt.date);
-
-//     let hours = 0;
-//     let minutes = 0;
-
-//     if (appt.time) {
-//       if (appt.time.includes("AM") || appt.time.includes("PM")) {
-//         const [time, modifier] = appt.time.split(" ");
-//         let [h, m] = time.split(":");
-
-//         hours = parseInt(h);
-//         minutes = parseInt(m);
-
-//         if (modifier === "PM" && hours !== 12) hours += 12;
-//         if (modifier === "AM" && hours === 12) hours = 0;
-//       } else {
-// const normalizeDateTime = (date, time) => {
-//   const d = new Date(date);
-//   let hours = 0;
-//   let minutes = 0;
-
-//   if (time.includes("AM") || time.includes("PM")) {
-//     const [t, mod] = time.split(" ");
-//     let [h, m] = t.split(":");
-
-//     hours = parseInt(h);
-//     minutes = parseInt(m);
-
-//     if (mod === "PM" && hours !== 12) hours += 12;
-//     if (mod === "AM" && hours === 12) hours = 0;
-//   }
-
-//   d.setHours(hours, minutes, 0, 0);
-//   return d;
-// };        hours = parseInt(h);
-//         minutes = parseInt(m);
-//       }
-//     }
-
-//     appointmentDate.setHours(hours, minutes, 0, 0);
-
-//     // MAIN LOGIC
-//     if (appointmentDate < now && appt.status === "pending") {
-//       appt.status = "rejected";
-//       await appt.save();
-//     }
-//   }
-// };
 
 // to create an appointment (stores an appointment in database)
 export const createAppointment = async (req, res) => {
@@ -113,14 +58,14 @@ export const createAppointment = async (req, res) => {
     endOfDay.setHours(23, 59, 59, 999);
     // 🔍 Check if slot already exists (ignore cancelled)
     const existingAppointment = await Appointment.findOne({
-  doctor: doctor,
-  status: "approved",
-  date: {
-      $gte: startOfDay,
-      $lt: endOfDay,
-  },
-  time,
-});
+      doctor: doctor,
+      status: "approved",
+      date: {
+        $gte: startOfDay,
+        $lt: endOfDay,
+      },
+      time,
+    });
 
     if (existingAppointment) {
       return res.status(400).json({
@@ -133,16 +78,16 @@ export const createAppointment = async (req, res) => {
       patient,
       date: selectedDate,
       time,
-      type, 
+      type,
       meetingLink,
     });
-    
-    if (type === "videocall") {
-  const roomName = `meditrack-${appointment._id}`;
-  appointment.meetingLink = `https://meet.jit.si/${roomName}`;
 
-  await appointment.save(); // save updated link
-}
+    if (type === "videocall") {
+      const roomName = `meditrack-${appointment._id}`;
+      appointment.meetingLink = `https://meet.jit.si/${roomName}`;
+
+      await appointment.save(); // save updated link
+    }
 
     res.status(201).json({
       message: "Appointment booked successfully",
@@ -162,6 +107,7 @@ export const createAppointment = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 // meeting details(video)
 export const getMeetingDetails = async (req, res) => {
   try {
@@ -185,7 +131,7 @@ export const getMeetingDetails = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
- 
+
 // show appointments of particular doctor
 export const getDoctorAppointments = async (req, res) => {
   try {
@@ -197,7 +143,7 @@ export const getDoctorAppointments = async (req, res) => {
 
     // AUTO REJECT PAST PENDING
     // await autoRejectPastAppointments(appointments);
-     try {
+    try {
       await autoRejectPastAppointments(appointments);
     } catch (err) {
       console.error("Auto reject error:", err);
@@ -399,8 +345,8 @@ export const rescheduleAppointment = async (req, res) => {
     // newDate.setHours(0, 0, 0, 0);
 
     // const newDate = new Date(`${date}T12:00:00`);
-        // const newDate = new Date(date);
-        //   newDate.setHours(0, 0, 0, 0);
+    // const newDate = new Date(date);
+    //   newDate.setHours(0, 0, 0, 0);
     const newDate = new Date(`${date}T12:00:00`);
     const appointment = await Appointment.findById(appointmentId);
 
@@ -444,11 +390,11 @@ export const rescheduleAppointment = async (req, res) => {
     appointment.status = "pending";
 
     if (appointment.type === "videocall") {
-  const roomName = `meditrack-${appointment._id}`;
-  appointment.meetingLink = `https://meet.jit.si/${roomName}`;
-} else {
-  appointment.meetingLink = null;
-}
+      const roomName = `meditrack-${appointment._id}`;
+      appointment.meetingLink = `https://meet.jit.si/${roomName}`;
+    } else {
+      appointment.meetingLink = null;
+    }
 
     await appointment.save();
 
@@ -547,21 +493,21 @@ export const getAvailableSlots = async (req, res) => {
       return res.status(404).json({ message: "Doctor not found" });
     }
     // CHECK WORKING DAY
-const selectedDate = new Date(date);
+    const selectedDate = new Date(date);
 
-const dayName = selectedDate.toLocaleString("en-US", {
-  weekday: "long",
-});
+    const dayName = selectedDate.toLocaleString("en-US", {
+      weekday: "long",
+    });
 
-// If doctor is NOT working on that day → return empty slots
-if (!doctor.workingDays.includes(dayName)) {
-  return res.json({
-    allSlots: [],
-    bookedSlots: [],
-    availableSlots: [],
-    isWorkingDay: false, 
-  });
-}
+    // If doctor is NOT working on that day → return empty slots
+    if (!doctor.workingDays.includes(dayName)) {
+      return res.json({
+        allSlots: [],
+        bookedSlots: [],
+        availableSlots: [],
+        isWorkingDay: false,
+      });
+    }
 
     let allSlots = [];
 
@@ -603,13 +549,13 @@ export const getBookedSlots = async (req, res) => {
     selectedDate.setHours(0, 0, 0, 0);
 
     const appointments = await Appointment.find({
-  doctor: doctorId,
-  status: "approved", // only approved slots blocked
-  date: {
-    $gte: selectedDate,
-    $lt: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000),
-  },
-});
+      doctor: doctorId,
+      status: "approved", // only approved slots blocked
+      date: {
+        $gte: selectedDate,
+        $lt: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000),
+      },
+    });
 
     const bookedSlots = appointments.map(app => app.time);
 
@@ -714,5 +660,100 @@ export const getAppointmentRequests = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error fetching requests" });
+  }
+};
+
+// GET NEXT PATIENT ON DOCTOR DASHBOARD
+
+export const getNextPatient = async (req, res) => {
+  try {
+    const doctorId = req.user.id;
+
+    // Start of today
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    // Get all upcoming approved appointments
+    const appointments = await Appointment.find({
+      doctor: doctorId,
+      status: "approved",
+      date: { $gte: todayStart }
+    })
+      .populate("patient")   // correct field
+      .sort({ date: 1 });
+
+    if (!appointments.length) {
+      return res.status(404).json({
+        message: "No upcoming patient"
+      });
+    }
+
+    const now = new Date();
+
+    let nextAppt = null;
+    let minDiff = Infinity;
+
+    // Find nearest appointment (date + time)
+    appointments.forEach((appt) => {
+      if (!appt.time) return;
+
+      let [time, modifier] = appt.time.split(" ");
+      let [hours, minutes] = time.split(":").map(Number);
+
+      if (modifier === "PM" && hours !== 12) hours += 12;
+      if (modifier === "AM" && hours === 12) hours = 0;
+
+      const apptDateTime = new Date(appt.date);
+      apptDateTime.setHours(hours, minutes, 0, 0);
+
+      const diff = apptDateTime - now;
+
+      if (diff >= 0 && diff < minDiff) {
+        minDiff = diff;
+        nextAppt = appt;
+      }
+    });
+
+    if (!nextAppt || !nextAppt.patient) {
+      return res.status(404).json({
+        message: "No upcoming patient"
+      });
+    }
+
+    const p = nextAppt.patient;
+
+    // Calculate age from DOB
+    const calculateAge = (dob) => {
+      if (!dob) return null;
+
+      const birth = new Date(dob);
+      const today = new Date();
+
+      let age = today.getFullYear() - birth.getFullYear();
+      const m = today.getMonth() - birth.getMonth();
+
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        age--;
+      }
+
+      return age;
+    };
+
+    // Final response
+    res.status(200).json({
+      _id: p._id,
+      name: `${p.firstName} ${p.lastName}`,
+      dob: p.dob,
+      gender: p.gender,
+      // FIXED VALUES
+      age: calculateAge(p.dob),
+      bloodGroup: p.bloodGroup || "--"
+    });
+
+  } catch (error) {
+    console.error("Next Patient Error:", error);
+    res.status(500).json({
+      message: "Server Error"
+    });
   }
 };

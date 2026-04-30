@@ -1,6 +1,8 @@
 import Patient from "../models/Patient.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+// import { sendEmail } from "../config/email.js";
+import { sendOtpService, verifyOtpService, resetPasswordService } from "../utils/forgotPassword.js";
 
 export const registerPatient = async (req, res) => {
   try {
@@ -187,6 +189,70 @@ const cookieOptions = {
   secure: true,
   sameSite: "None",
   path: "/", // VERY IMPORTANT
+};
+
+export const getPatientProfile = async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.user.id).select("-password");
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.status(200).json({
+      message: "Patient Profile Fetched",
+      user: patient,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updatePatientProfile = async (req, res) => {
+  try {
+    const updated = await Patient.findByIdAndUpdate(
+      req.user.id,
+      req.body,
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    res.json({ patient: updated });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const sendOtp = async (req, res) => {
+  try {
+    await sendOtpService(Patient, req.body.email);
+    res.json({ message: "OTP sent" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    await verifyOtpService(Patient, email, otp);
+
+    res.json({ message: "OTP verified" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, password } = req.body;
+
+    await resetPasswordService(Patient, email, otp, password);
+
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 };
 
 export const logoutPatient = (req, res) => {

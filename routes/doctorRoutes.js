@@ -9,6 +9,9 @@ import {
   updateDoctorStatus,
   getGender,
   getDoctorProfileFull,
+  sendOtpDoctor,
+  verifyOtpDoctor,
+  resetPasswordDoctor,
 } from "../controllers/doctorController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
@@ -19,6 +22,11 @@ router.post("/register", registerDoctor);
 router.post("/login", loginDoctor);
 router.post("/logout", logoutDoctor);
 router.post("/complete-profile", protect, authorize("doctor"), completeDoctorProfile,); // complete doctor profile
+
+//forgot password api
+router.post("/send-otp", sendOtpDoctor);
+router.post("/verify-otp", verifyOtpDoctor);
+router.post("/reset-password", resetPasswordDoctor);
 
 router.get("/names", getDoctorNames); // get all doctors in dropdown
 router.get("/all", getAllDoctor); // get all doctor in admin side doc page

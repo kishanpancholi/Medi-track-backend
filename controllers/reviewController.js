@@ -69,12 +69,12 @@ export const getDoctorAllReviews = async (req, res) => {
   }
 };
 
-// GET /api/reviews/:doctorId - for doctor dashboard (summary + latest 3 reviews)
+// GET /api/review/:doctorId - for doctor dashboard (summary + latest 3 reviews)
 export const getDoctorReviews = async (req, res) => {
   try {
     const doctorId = req.user.id;
     const reviews = await Review.find({ doctor: doctorId })
-      .populate("patient", "firstName l")
+      .populate("patient", "firstName lastName")
       .sort({ createdAt: -1 });
 
     // ✅ total reviews

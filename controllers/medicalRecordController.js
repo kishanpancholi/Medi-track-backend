@@ -1,16 +1,6 @@
 import MedicalRecord from "../models/MedicalRecord.js";
 import Patient from "../models/Patient.js";
 
-// ➤ Create Record
-// export const createRecord = async (req, res) => {
-//   try {
-//     const record = await MedicalRecord.create(req.body);
-//     res.status(201).json(record);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
 export const createRecord = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
@@ -25,7 +15,7 @@ export const createRecord = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    if (!["lab", "scan", "prescription"].includes(type)) {
+    if (!["Report", "scan", "prescription"].includes(type)) {
       return res.status(400).json({ message: "Invalid type" });
     }
 
@@ -65,63 +55,18 @@ export const createRecord = async (req, res) => {
   }
 };
 
-// ➤ Get Records (with search, filter, pagination)
-// export const getPatientRecords = async (req, res) => {
-//   try {
-//     const { patientId } = req.params;
-//     const { search, type, page = 1, limit = 10 } = req.query;
-
-//     if (req.user.id !== patientId) {
-//       return res.status(403).json({ message: "Unauthorized" });
-//     }
-
-//     let query = { patient: patientId };
-
-//     if (type && type !== "all") {
-//       query.type = type;
-//     }
-
-//     if (search) {
-//       query.title = { $regex: search, $options: "i" };
-//     }
-
-//     const records = await MedicalRecord.find(query)
-//       .sort({ date: -1 })
-//       .skip((page - 1) * limit)
-//       .limit(Number(limit));
-
-//     const total = await MedicalRecord.countDocuments(query);
-
-//     res.json({
-//       total,
-//       page: Number(page),
-//       pages: Math.ceil(total / limit),
-//       records,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
+// doctor can see only their patient records
 export const getPatientRecords = async (req, res) => {
   try {
     const doctorId = req.user.id;
     const { patientId } = req.params;
-    const { search } = req.query;
 
-    // 🔒 ensure doctor only sees his own patients
-    const query = {
+    const records = await MedicalRecord.find({
       doctor: doctorId,
       patient: patientId
-    };
+    }).sort({ date: -1 });
 
-    if (search) {
-      query.title = { $regex: search, $options: "i" };
-    }
-
-    const records = await MedicalRecord.find(query)
-      .sort({ date: -1 });
-
-    res.json(records);
+    res.json({ records });
 
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -142,23 +87,6 @@ export const getRecordById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-// ➤ Delete Record
-// export const deleteRecord = async (req, res) => {
-//   try {
-//     const record = await MedicalRecord.findById(req.params.id);
-
-//     if (!record) {
-//       return res.status(404).json({ message: "Record not found" });
-//     }
-
-//     await record.deleteOne();
-
-//     res.json({ message: "Deleted successfully" });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
 
 export const deleteRecord = async (req, res) => {
   try {
@@ -230,5 +158,26 @@ export const getDoctorPatients = async (req, res) => {
   } catch (err) {
     console.log("ERROR:", err);
     res.status(500).json({ message: err.message });
+  }
+};
+
+// patient records
+export const getMyRecords = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const records = await MedicalRecord.find({
+      patient: userId
+    }).sort({ date: -1 });
+
+    res.json({ records });
+
+  } catch (error) {
+    console.log("GET MY RECORDS ERROR:", error); // 🔥 IMPORTANT
+    res.status(500).json({ message: error.message });
   }
 };

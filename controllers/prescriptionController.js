@@ -1,4 +1,8 @@
 import Prescription from "../models/Prescription.js";
+import Notification from "../models/Notification.js";
+import { notificationMessages } from "../utils/notificationMessages.js";
+import { sendNotification } from "../utils/sendNotification.js";
+import { NOTIFICATION_EVENTS } from "../utils/notificationEvents.js";
 
 // Doctor creates prescription
 export const createPrescription = async (req, res) => {
@@ -12,7 +16,24 @@ export const createPrescription = async (req, res) => {
       medicines,
       notes,
     });
+    const msg = {
+      title: "New Prescription",
+      message: "Your doctor has added a new prescription for you.",
+    };
 
+    const notification = await sendNotification({
+  userId: patient,
+  role: "Patient",
+  type: NOTIFICATION_EVENTS.PRESCRIPTION_CREATED,
+  title: "New Prescription",
+  message: "Your doctor has added a new prescription for you.",
+  link: "/prescriptions",
+});
+
+    // ⚡ REAL-TIME SOCKET EMIT
+    // global.io
+    //   .to(patient.toString())
+    //   .emit("newNotification", notification);
     res.status(201).json({
       success: true,
       message: "Prescription created successfully",
@@ -32,11 +53,11 @@ export const getPatientPrescriptions = async (req, res) => {
     const prescriptions = await Prescription.find({
       patient: req.user.id,
     })
-    .populate("patient", "firstName lastName")
-    .populate("doctor", "fullName specialization")
-    .sort({ createdAt: -1 });
+      .populate("patient", "firstName lastName")
+      .populate("doctor", "fullName specialization")
+      .sort({ createdAt: -1 });
 
-   res.status(200).json({
+    res.status(200).json({
       success: true,
       count: prescriptions.length,
       data: prescriptions,

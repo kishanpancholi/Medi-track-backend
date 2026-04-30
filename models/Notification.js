@@ -18,10 +18,12 @@ const notificationSchema = new mongoose.Schema(
       type: String,
       enum: [
         "appointment_booked",
+         "appointment_request",
         "appointment_approved",
         "appointment_rejected",
         "appointment_cancelled",
         "appointment_rescheduled",
+        "appointment_completed",
         "record_uploaded",
         "prescription_added",
         "review_added",

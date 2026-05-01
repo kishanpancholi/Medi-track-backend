@@ -11,7 +11,7 @@ import {
   getDoctorProfileFull,
   sendOtpDoctor,
   verifyOtpDoctor,
-  resetPasswordDoctor,
+  resetPasswordDoctor,getFilteredDoctors,getFilterOptions
 } from "../controllers/doctorController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
@@ -33,6 +33,8 @@ router.get("/all", getAllDoctor); // get all doctor in admin side doc page
 router.put("/:doctorId/status", protect, authorize("admin"), updateDoctorStatus); // doctor approve or reject by admin 
 router.get("/gender", protect, getGender);
 router.get("/profile-full", protect, authorize("doctor"), getDoctorProfileFull); // api for update doctor profile
+router.get("/filtered", getFilteredDoctors); // get filtered doctors on patient home page
+router.get("/filters", getFilterOptions);
 
 router.get("/profile", protect, authorize("doctor"), (req, res) => {
   res.status(200).json({

@@ -193,7 +193,9 @@ export const getMyRecords = async (req, res) => {
 
     const records = await MedicalRecord.find({
       patient: userId
-    }).sort({ date: -1 });
+    })
+    .populate("doctor", "fullName")
+    .sort({ date: -1 });
 
     res.json({ records });
 

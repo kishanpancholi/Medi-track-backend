@@ -6,7 +6,7 @@ import { sendNotification } from "../utils/sendNotification.js";
 export const addReview = async (req, res) => {
   try {
     const { doctorId, rating, comment } = req.body;
-
+ 
     const review = await Review.create({
       doctor: doctorId,
       patient: req.user.id,
@@ -35,34 +35,22 @@ export const addReview = async (req, res) => {
   }
 };
 
-
-// GET /api/reviews/:doctorId - for doctor to see all reviews
-// export const getDoctorAllReviews = async (req, res) => {
-//   try {
-//     const reviews = await Review.find({
-//       doctor: req.params.doctorId,
-//     }).populate("patient", "name");
-
-//     res.json(reviews);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
-
+// show review on doctor side review page
 export const getDoctorAllReviews = async (req, res) => {
   try {
-    const reviews = await Review.find({
-      doctor: req.params.doctorId,
-    }).populate("patient", "firstName lastName");
+    const doctorId = req.user.id;
 
-    // ✅ CALCULATIONS
+    const reviews = await Review.find({
+      doctor: doctorId,
+    })
+      .populate("patient", "firstName lastName")
+      .sort({ createdAt: -1 });
+
     const totalReviews = reviews.length;
 
     const avgRating =
       totalReviews > 0
-        ? (
-            reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
-          ).toFixed(1)
+        ? (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1)
         : 0;
 
     const ratingCount = {
@@ -73,7 +61,6 @@ export const getDoctorAllReviews = async (req, res) => {
       1: reviews.filter((r) => r.rating === 1).length,
     };
 
-    // ✅ FINAL RESPONSE (IMPORTANT)
     res.json({
       avgRating,
       totalReviews,

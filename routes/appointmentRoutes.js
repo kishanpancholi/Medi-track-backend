@@ -19,7 +19,7 @@ import { authorize } from "../middleware/authorize.js";
 
 const router = express.Router();
 
-router.post("/", createAppointment); // POST /api/appointments
+router.post("/", protect, createAppointment); // POST /api/appointments
 router.get("/meeting/:appointmentId", protect, getMeetingDetails); // get meeting detail for video call appointments
 router.get("/doctor", protect, getDoctorAppointments); // get doctor appointment
 router.put("/:id", protect, updateAppointmentStatus); // update status

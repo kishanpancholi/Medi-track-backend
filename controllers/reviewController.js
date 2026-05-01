@@ -1,5 +1,7 @@
 // POST /api/reviews
 import Review from "../models/Review.js";
+import { notificationMessages } from "../utils/notificationMessages.js";
+import { sendNotification } from "../utils/sendNotification.js";  
 
 export const addReview = async (req, res) => {
   try {
@@ -10,6 +12,21 @@ export const addReview = async (req, res) => {
       patient: req.user.id,
       rating,
       comment,
+    });
+       const patientName = `${req.user.firstName} ${req.user.lastName}`;
+
+    const notif = notificationMessages.review_added(
+      patientName,
+      rating
+    );
+
+    await sendNotification({
+      userId: doctorId,
+      role: "Doctor",
+      type: "review_added",
+      title: notif.title,
+      message: notif.message,
+      link: "/doctor/reviews",
     });
 
     res.status(201).json(review);

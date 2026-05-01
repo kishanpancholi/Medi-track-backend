@@ -1,5 +1,16 @@
 import MedicalRecord from "../models/MedicalRecord.js";
 import Patient from "../models/Patient.js";
+import { sendNotification } from "../utils/sendNotification.js";
+import { notificationMessages } from "../utils/notificationMessages.js";
+// ➤ Create Record
+// export const createRecord = async (req, res) => {
+//   try {
+//     const record = await MedicalRecord.create(req.body);
+//     res.status(201).json(record);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 
 export const createRecord = async (req, res) => {
   try {
@@ -44,7 +55,17 @@ export const createRecord = async (req, res) => {
       fileName,
       uploadedBy: "patient",
     });
+    const patientData = await Patient.findById(userId);
 
+   const notif = notificationMessages.record_uploaded(patientName);
+
+await sendNotification({
+  userId: doctorId,
+  role: "Doctor",
+  type: "record_uploaded",
+  title: notif.title,
+  message: notif.message,
+});
     return res.status(201).json(record);
 
   } catch (error) {

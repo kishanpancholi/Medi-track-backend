@@ -16,19 +16,19 @@ export const createPrescription = async (req, res) => {
       medicines,
       notes,
     });
-    const msg = {
-      title: "New Prescription",
-      message: "Your doctor has added a new prescription for you.",
-    };
+    const doctorName = req.user.fullName;
 
-    const notification = await sendNotification({
+const notif = notificationMessages.prescription_added(doctorName);
+
+await sendNotification({
   userId: patient,
   role: "Patient",
-  type: NOTIFICATION_EVENTS.PRESCRIPTION_CREATED,
-  title: "New Prescription",
-  message: "Your doctor has added a new prescription for you.",
+  type: "prescription_added",
+  title: notif.title,
+  message: notif.message,
   link: "/prescriptions",
 });
+
 
     // ⚡ REAL-TIME SOCKET EMIT
     // global.io
@@ -133,7 +133,20 @@ export const updatePrescription = async (req, res) => {
         message: "Prescription not found",
       });
     }
+    const doctorName = req.user.fullName;
 
+const prescription = await Prescription.findById(req.params.id);
+const patientId = prescription.patient;
+
+const notif = notificationMessages.prescription_updated(doctorName);
+
+await sendNotification({
+  userId: patientId,
+  role: "Patient",
+  type: "prescription_updated",
+  title: notif.title,
+  message: notif.message,
+});
     res.status(200).json({
       success: true,
       message: "Prescription updated successfully",
@@ -168,7 +181,35 @@ export const updateMedicineStatus = async (req, res) => {
     medicine.mStatus = mStatus;
 
     await prescription.save();
+    const patientName = req.user.firstName;
+const medicineName = medicine.name; // adjust field if different
 
+// 👉 Patient notification
+const patientNotif =
+  notificationMessages.medicine_status_updated_patient(medicineName);
+
+await sendNotification({
+  userId: req.user.id,
+  role: "Patient",
+  type: "medicine_status_updated",
+  title: patientNotif.title,
+  message: patientNotif.message,
+});
+
+// 👉 Doctor notification
+const doctorNotif =
+  notificationMessages.medicine_status_updated_doctor(
+    patientName,
+    medicineName
+  );
+
+await sendNotification({
+  userId: prescription.doctor,
+  role: "Doctor",
+  type: "medicine_status_updated",
+  title: doctorNotif.title,
+  message: doctorNotif.message,
+});
     res.status(200).json({
       success: true,
       message: "Medicine status updated",
@@ -192,7 +233,23 @@ export const updatePrescriptionStatus = async (req, res) => {
       { pStatus },
       { new: true }
     );
+    const doctorName = req.user.fullName;
 
+const prescription = await Prescription.findById(req.params.id);
+const patientId = prescription.patient;
+
+const notif = notificationMessages.prescription_status_updated(
+  doctorName,
+  pStatus
+);
+
+await sendNotification({
+  userId: patientId,
+  role: "Patient",
+  type: "prescription_status_updated",
+  title: notif.title,
+  message: notif.message,
+});
     res.status(200).json({
       success: true,
       message: "Prescription status updated",

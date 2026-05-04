@@ -81,16 +81,16 @@ global.io = io;
 
 // 🔥 SOCKET CONNECTION
 io.on("connection", (socket) => {
-  console.log("✅ User connected:", socket.id);
+  // console.log("✅ User connected:", socket.id);
 
   // 👇 USER JOINS THEIR ROOM
   socket.on("join", (userId) => {
     socket.join(userId);
-    console.log("📦 Joined room:", userId);
+    // console.log("📦 Joined room:", userId);
   });
  
   socket.on("disconnect", () => {
-    console.log("❌ User disconnected");
+    // console.log("❌ User disconnected");
   });
 });
 

@@ -6,6 +6,8 @@ import prescriptionRoutes from "./prescriptionRoutes.js";
 import medicalRecordRoutes from "./medicalRecordRoutes.js";
 import reviewRoutes from "./reviewRoutes.js";
 import notificationRoutes from "./notificationRoutes.js";
+import chatbotRoutes from "./chatbotRoutes.js";
+
 //routes
 const routes = (app) => {
   app.use("/api/patient", patientRoutes);
@@ -16,6 +18,7 @@ const routes = (app) => {
   app.use("/api/record", medicalRecordRoutes);
   app.use("/api/review", reviewRoutes);
   app.use("/api/notification", notificationRoutes);
+  app.use("/api/chatbot", chatbotRoutes);
 };
 
 export default routes;

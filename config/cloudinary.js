@@ -3,12 +3,12 @@ dotenv.config(); // MUST be first
 
 import { v2 as cloudinary } from "cloudinary";
 
-console.log(
-  "ENV CHECK:",
-  process.env.CLOUD_NAME,
-  process.env.API_KEY,
-  process.env.API_SECRET
-);
+// console.log(
+//   "ENV CHECK:",
+//   process.env.CLOUD_NAME,
+//   process.env.API_KEY,
+//   process.env.API_SECRET
+// );
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,

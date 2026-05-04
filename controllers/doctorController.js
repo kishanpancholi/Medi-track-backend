@@ -391,7 +391,7 @@ export const getFilteredDoctors = async (req, res) => {
       query.availability = { $in: [availability] };
     }
 
-    console.log("Final Query:", query);
+    // console.log("Final Query:", query);
 
     let doctors = await Doctor.find(query);
 

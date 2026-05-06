@@ -21,67 +21,78 @@ export const sendOtpService = async (Model, email) => {
   //   `Your OTP is ${otp}`
   // );
 
-  const htmlTemplate = `
-  <div style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8; padding:20px 0;">
+const htmlTemplate = `
+  <div style="margin:0; padding:0; background:#f4f6f8; font-family:Arial, sans-serif;">
+    
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:30px 0;">
       <tr>
         <td align="center">
-          
-          <!-- Card Container -->
-          <table width="420" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-            
-            <!-- Header -->
+
+          <!-- MAIN CARD -->
+          <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,0.1);">
+
+            <!-- HEADER (Gradient + Logo) -->
             <tr>
-              <td align="center" style="padding-bottom:20px;">
-                <h2 style="margin:0; color:#333;">OTP Verification</h2>
+              <td align="center" style="padding:30px; background:linear-gradient(135deg,#0aa5a5,#2bbbad);">
+                
+                <!-- LOGO -->
+                <img 
+                  src="/Logo.png"
+                  alt="MediTrack Logo" 
+                  width="90" 
+                  style="margin-bottom:10px;"
+                />
+
+                <h2 style="color:#ffffff; margin:0; font-weight:600;">
+                  MediTrack
+                </h2>
+
               </td>
             </tr>
 
-            <!-- Message -->
+            <!-- BODY -->
             <tr>
-              <td align="center" style="color:#555; font-size:15px; line-height:1.5;">
-                We received a request to reset your password.<br/>
-                Use the OTP below to proceed.
-              </td>
-            </tr>
+              <td style="padding:30px; text-align:left; color:#333;">
 
-            <!-- OTP Box -->
-            <tr>
-              <td align="center" style="padding:25px 0;">
-                <div style="
-                  display:inline-block;
-                  background:#0aa5a5;
-                  color:#ffffff;
-                  font-size:30px;
-                  font-weight:bold;
-                  letter-spacing:10px;
-                  padding:7px 9px 7px 16px;
-                  border-radius:8px;
-                ">
-                  ${otp}
+                <h3 style="margin-top:0;">OTP Verification</h3>
+
+                <p style="font-size:14px; line-height:1.6; color:#555;">
+                  Hi User,
+                  <br/><br/>
+                  We received a request to reset your password.  
+                  Use the OTP below to complete the process.
+                </p>
+
+                <!-- OTP BOX -->
+                <div style="text-align:center; margin:30px 0;">
+                  <span style="
+                    display:inline-block;
+                    background:#0aa5a5;
+                    color:#ffffff;
+                    font-size:30px;
+                    font-weight:bold;
+                    letter-spacing:6px;
+                    padding:6px 9px 6px 15px;
+                    border-radius:8px;
+                  ">
+                    ${otp}
+                  </span>
                 </div>
+
+                <p style="font-size:14px; color:#555;">
+                  This OTP is valid for <b>5 minutes</b>.
+                </p>
+
+                <p style="font-size:14px; color:#777;">
+                  If you didn’t request this, you can safely ignore this email.
+                </p>
+
               </td>
             </tr>
 
-            <!-- Expiry -->
+            <!-- FOOTER -->
             <tr>
-              <td align="center" style="color:#777; font-size:14px;">
-                This OTP is valid for <b>5 minutes</b>.
-              </td>
-            </tr>
-
-            <!-- Divider -->
-            <tr>
-              <td style="padding:20px 0;">
-                <hr style="border:none; border-top:1px solid #eee;" />
-              </td>
-            </tr>
-
-            <!-- Footer -->
-            <tr>
-              <td align="center" style="color:#999; font-size:12px; line-height:1.5;">
-                If you did not request this, you can safely ignore this email.<br/>
-                <br/>
+              <td style="background:#f9f9f9; padding:20px; text-align:center; font-size:12px; color:#999;">
                 © 2026 MediTrack. All rights reserved.
               </td>
             </tr>
@@ -91,6 +102,7 @@ export const sendOtpService = async (Model, email) => {
         </td>
       </tr>
     </table>
+
   </div>
 `;
 

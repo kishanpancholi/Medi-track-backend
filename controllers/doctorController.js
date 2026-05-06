@@ -253,13 +253,13 @@ export const getGender = async (req, res) => {
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: "Unauthorized - No user" });
     }
-    
+
     const doctorId = req.user.id;
-    
+
     const appointments = await Appointment.find({
       doctor: doctorId, // removed ObjectId conversion (safer)
     }).populate("patient", "gender");
-    
+
     const uniquePatients = new Map();
     appointments.forEach((appt) => {
       if (appt.patient) {
@@ -276,7 +276,7 @@ export const getGender = async (req, res) => {
       if (gender === "male") male++;
       if (gender === "female") female++;
     });
-    
+
     res.status(200).json({ male, female });
 
   } catch (error) {
@@ -293,11 +293,11 @@ export const getDoctorProfileFull = async (req, res) => {
     }
 
     const doctor = await Doctor.findById(req.user.id).select("-password");
-    
+
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-    
+
     res.status(200).json({
       success: true,
       user: doctor,
@@ -345,6 +345,88 @@ export const logoutDoctor = (req, res) => {
   res.clearCookie("token", cookieOptions);
   res.status(200).json({ message: "Logout successful" });
 };
+// export const getFilteredDoctors = async (req, res) => {
+//   try {
+//     const {
+//       specialization,
+//       serviceType,
+//       experience,
+//       rating,
+//       availability
+//     } = req.query;
+
+//     let query = {
+//       status: "approved",
+//       isProfileComplete: true,
+//     };
+
+//     // ✅ Specialization
+//     if (specialization) {
+//       query.specialization = { $regex: `^${specialization}$`, $options: "i" };
+//     }
+
+//     // ✅ Service Type (flexible match)
+//     // if (serviceType) {
+//     //   query.serviceType = { $regex: serviceType, $options: "i" };
+//     // }
+
+//     if (serviceType) {
+//   query.serviceType = { $in: [serviceType] };
+// }
+
+//     // ✅ Experience (robust)
+//     if (experience) {
+//       if (experience === "0-5") {
+//         query.experience = { $gte: 0, $lte: 5 };
+//       } else if (experience === "5-10") {
+//         query.experience = { $gte: 5, $lte: 10 };
+//       } else if (experience === "10+") {
+//         query.experience = { $gte: 10 };
+//       }
+//     }
+
+//     // ✅ Rating (safe)
+//     if (rating && !isNaN(rating)) {
+//       query.rating = { $gte: Number(rating) };
+//     }
+
+//     // ✅ Availability (IMPORTANT FIX)
+//     if (availability) {
+//   query.workingDays = { $in: [availability] };
+// }
+
+//     // console.log("Final Query:", query);
+
+//     let doctors = await Doctor.find(query);
+
+//     // 🔥 SMART FALLBACK (very important UX)
+//     if (doctors.length === 0) {
+//       console.log("No exact match → relaxing filters");
+
+//       // remove strict filters one by one
+//       let relaxedQuery = {
+//         status: "approved",
+//         isProfileComplete: true,
+//       };
+
+//       if (specialization) {
+//         relaxedQuery.specialization = {
+//           $regex: specialization,
+//           $options: "i",
+//         };
+//       }
+
+//       doctors = await Doctor.find(relaxedQuery);
+//     }
+
+//     res.status(200).json(doctors);
+
+//   } catch (error) {
+//     console.error("Filter error:", error);
+//     res.status(500).json({ message: "Server Error" });
+//   }
+// };
+
 export const getFilteredDoctors = async (req, res) => {
   try {
     const {
@@ -362,44 +444,46 @@ export const getFilteredDoctors = async (req, res) => {
 
     // ✅ Specialization
     if (specialization) {
-      query.specialization = { $regex: `^${specialization}$`, $options: "i" };
+      query.specialization = {
+        $regex: specialization,
+        $options: "i",
+      };
     }
 
-    // ✅ Service Type (flexible match)
+    // ✅ Service Type (ARRAY FIX)
     if (serviceType) {
-      query.serviceType = { $regex: serviceType, $options: "i" };
+      query.serviceType = serviceType;
     }
 
-    // ✅ Experience (robust)
+    // ✅ Experience (NUMBER BASED)
     if (experience) {
       if (experience === "0-5") {
         query.experience = { $gte: 0, $lte: 5 };
       } else if (experience === "5-10") {
-        query.experience = { $gte: 5, $lte: 10 };
+        query.experience = { $gt: 5, $lte: 10 };
       } else if (experience === "10+") {
-        query.experience = { $gte: 10 };
+        query.experience = { $gt: 10 };
       }
     }
 
-    // ✅ Rating (safe)
-    if (rating && !isNaN(rating)) {
+    // ✅ Availability (FIXED FIELD)
+    if (availability) {
+      query.workingDays = { $in: [availability] };
+    }
+
+    // ✅ Rating (only if exists in schema)
+    if (rating) {
       query.rating = { $gte: Number(rating) };
     }
 
-    // ✅ Availability (IMPORTANT FIX)
-    if (availability) {
-      query.availability = { $in: [availability] };
-    }
-
-    // console.log("Final Query:", query);
+    console.log("FINAL QUERY:", query);
 
     let doctors = await Doctor.find(query);
 
-    // 🔥 SMART FALLBACK (very important UX)
+    // 🔥 SMART FALLBACK (VERY IMPORTANT)
     if (doctors.length === 0) {
       console.log("No exact match → relaxing filters");
 
-      // remove strict filters one by one
       let relaxedQuery = {
         status: "approved",
         isProfileComplete: true,
@@ -422,6 +506,7 @@ export const getFilteredDoctors = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
 // the dynamic dropdown values for specialization, service type and availability for patient home page filters section
 export const getFilterOptions = async (req, res) => {
   try {

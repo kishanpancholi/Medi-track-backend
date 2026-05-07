@@ -79,7 +79,8 @@ export const getDoctorReviews = async (req, res) => {
     const doctorId = req.user.id;
     const reviews = await Review.find({ doctor: doctorId })
       .populate("patient", "firstName lastName")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(2);
 
     // ✅ total reviews
     const totalReviews = reviews.length;

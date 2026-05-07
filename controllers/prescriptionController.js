@@ -146,6 +146,7 @@ await sendNotification({
   type: "prescription_updated",
   title: notif.title,
   message: notif.message,
+  link: "/prescriptions",
 });
     res.status(200).json({
       success: true,
@@ -182,7 +183,7 @@ export const updateMedicineStatus = async (req, res) => {
 
     await prescription.save();
     const patientName = req.user.firstName;
-const medicineName = medicine.name; // adjust field if different
+const medicineName = medicine.name; 
 
 // 👉 Patient notification
 const patientNotif =
@@ -194,6 +195,7 @@ await sendNotification({
   type: "medicine_status_updated",
   title: patientNotif.title,
   message: patientNotif.message,
+  link: "/prescriptions",
 });
 
 // 👉 Doctor notification
@@ -209,6 +211,7 @@ await sendNotification({
   type: "medicine_status_updated",
   title: doctorNotif.title,
   message: doctorNotif.message,
+  link: "/DoctorPrescription",
 });
     res.status(200).json({
       success: true,
@@ -249,6 +252,7 @@ await sendNotification({
   type: "prescription_status_updated",
   title: notif.title,
   message: notif.message,
+  link: "/prescriptions",
 });
     res.status(200).json({
       success: true,

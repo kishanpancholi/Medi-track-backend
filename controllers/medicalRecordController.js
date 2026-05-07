@@ -65,6 +65,7 @@ await sendNotification({
   type: "record_uploaded",
   title: notif.title,
   message: notif.message,
+  link: "/DoctorMedicalRecords",
 });
     return res.status(201).json(record);
 

@@ -110,8 +110,8 @@ const { title: patientTitle, message: patientMessage } =
   notificationMessages.appointment_booked(doctorData.fullName);
 
 await sendNotification({
-  userId: appointment.patient,      // ✅ FIXED
-  role: "Patient",                  // ✅ FIXED
+  userId: appointment.patient,      
+  role: "Patient",                  
   type: "appointment_booked",
   title: patientTitle,
   message: patientMessage,
@@ -130,7 +130,7 @@ await sendNotification({
   type: "appointment_request",
   title: doctorTitle,
   message: doctorMessage,
-  link: "/doctor/appointments",
+  link: "/AppointmentView",
 });
 
     res.status(201).json({
@@ -435,7 +435,7 @@ export const cancelAppointment = async (req, res) => {
       type: "appointment_cancelled",
       title,
       message,
-      link: "/doctor/appointments",
+      link: "/AppointmentView",
     });
     res.status(200).json({
       message: "Appointment cancelled successfully",
@@ -526,7 +526,7 @@ await sendNotification({
   type: "appointment_rescheduled",
   title,
   message,
-  link: "/doctor/appointments",
+  link: "/AppointmentView",
 });
     res.status(200).json({
       message: "Appointment rescheduled successfully",

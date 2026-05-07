@@ -6,7 +6,6 @@ import { sendOtpService, verifyOtpService, resetPasswordService } from "../utils
 
 export const registerDoctor = async (req, res) => {
   try {
-    // console.log("Doctor Form Data:", req.body);//this line is printing the submitted data in terminal 
     const {
       fullName,
       email,
@@ -345,87 +344,6 @@ export const logoutDoctor = (req, res) => {
   res.clearCookie("token", cookieOptions);
   res.status(200).json({ message: "Logout successful" });
 };
-// export const getFilteredDoctors = async (req, res) => {
-//   try {
-//     const {
-//       specialization,
-//       serviceType,
-//       experience,
-//       rating,
-//       availability
-//     } = req.query;
-
-//     let query = {
-//       status: "approved",
-//       isProfileComplete: true,
-//     };
-
-//     // ✅ Specialization
-//     if (specialization) {
-//       query.specialization = { $regex: `^${specialization}$`, $options: "i" };
-//     }
-
-//     // ✅ Service Type (flexible match)
-//     // if (serviceType) {
-//     //   query.serviceType = { $regex: serviceType, $options: "i" };
-//     // }
-
-//     if (serviceType) {
-//   query.serviceType = { $in: [serviceType] };
-// }
-
-//     // ✅ Experience (robust)
-//     if (experience) {
-//       if (experience === "0-5") {
-//         query.experience = { $gte: 0, $lte: 5 };
-//       } else if (experience === "5-10") {
-//         query.experience = { $gte: 5, $lte: 10 };
-//       } else if (experience === "10+") {
-//         query.experience = { $gte: 10 };
-//       }
-//     }
-
-//     // ✅ Rating (safe)
-//     if (rating && !isNaN(rating)) {
-//       query.rating = { $gte: Number(rating) };
-//     }
-
-//     // ✅ Availability (IMPORTANT FIX)
-//     if (availability) {
-//   query.workingDays = { $in: [availability] };
-// }
-
-//     // console.log("Final Query:", query);
-
-//     let doctors = await Doctor.find(query);
-
-//     // 🔥 SMART FALLBACK (very important UX)
-//     if (doctors.length === 0) {
-//       console.log("No exact match → relaxing filters");
-
-//       // remove strict filters one by one
-//       let relaxedQuery = {
-//         status: "approved",
-//         isProfileComplete: true,
-//       };
-
-//       if (specialization) {
-//         relaxedQuery.specialization = {
-//           $regex: specialization,
-//           $options: "i",
-//         };
-//       }
-
-//       doctors = await Doctor.find(relaxedQuery);
-//     }
-
-//     res.status(200).json(doctors);
-
-//   } catch (error) {
-//     console.error("Filter error:", error);
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
 
 export const getFilteredDoctors = async (req, res) => {
   try {
@@ -442,7 +360,7 @@ export const getFilteredDoctors = async (req, res) => {
       isProfileComplete: true,
     };
 
-    // ✅ Specialization
+    // Specialization
     if (specialization) {
       query.specialization = {
         $regex: specialization,
@@ -450,12 +368,14 @@ export const getFilteredDoctors = async (req, res) => {
       };
     }
 
-    // ✅ Service Type (ARRAY FIX)
+    // Service Type
     if (serviceType) {
-      query.serviceType = serviceType;
+      query.serviceType = {
+        $regex: new RegExp(`^${serviceType}$`, "i"),
+      };
     }
 
-    // ✅ Experience (NUMBER BASED)
+    // Experience (NUMBER BASED)
     if (experience) {
       if (experience === "0-5") {
         query.experience = { $gte: 0, $lte: 5 };
@@ -466,38 +386,21 @@ export const getFilteredDoctors = async (req, res) => {
       }
     }
 
-    // ✅ Availability (FIXED FIELD)
+    // Availability (FIXED FIELD)
     if (availability) {
-      query.workingDays = { $in: [availability] };
+      query.workingDays = {
+        $elemMatch: {
+          $regex: new RegExp(`^${availability}$`, "i"),
+        },
+      };
     }
 
-    // ✅ Rating (only if exists in schema)
+    // Rating (only if exists in schema)
     if (rating) {
       query.rating = { $gte: Number(rating) };
     }
 
-    console.log("FINAL QUERY:", query);
-
     let doctors = await Doctor.find(query);
-
-    // 🔥 SMART FALLBACK (VERY IMPORTANT)
-    if (doctors.length === 0) {
-      console.log("No exact match → relaxing filters");
-
-      let relaxedQuery = {
-        status: "approved",
-        isProfileComplete: true,
-      };
-
-      if (specialization) {
-        relaxedQuery.specialization = {
-          $regex: specialization,
-          $options: "i",
-        };
-      }
-
-      doctors = await Doctor.find(relaxedQuery);
-    }
 
     res.status(200).json(doctors);
 

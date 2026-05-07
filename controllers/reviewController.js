@@ -73,19 +73,18 @@ export const getDoctorAllReviews = async (req, res) => {
   }
 };
 
-// GET /api/review/:doctorId - for doctor dashboard (summary + latest 3 reviews)
+// GET /api/review/:doctorId - for doctor dashboard (summary + latest 2 reviews)
 export const getDoctorReviews = async (req, res) => {
   try {
     const doctorId = req.user.id;
     const reviews = await Review.find({ doctor: doctorId })
       .populate("patient", "firstName lastName")
       .sort({ createdAt: -1 })
-      .limit(2);
 
-    // ✅ total reviews
+    // total reviews
     const totalReviews = reviews.length;
 
-    // ✅ average rating
+    // average rating
     const avgRating =
       totalReviews === 0
         ? 0
@@ -93,7 +92,7 @@ export const getDoctorReviews = async (req, res) => {
             reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
           ).toFixed(1);
 
-    // ✅ rating distribution
+    // rating distribution
     const ratingCount = {
       5: 0,
       4: 0,
@@ -106,10 +105,10 @@ export const getDoctorReviews = async (req, res) => {
       ratingCount[r.rating] += 1;
     });
 
-    // ✅ latest 3 reviews
-    const latestReviews = reviews.slice(0, 3);
+    // latest 2 reviews
+    const latestReviews = reviews.slice(0, 2);
 
-    // ✅ response
+    // response
     res.json({
       totalReviews,
       avgRating,
@@ -123,12 +122,12 @@ export const getDoctorReviews = async (req, res) => {
   }
 };
 
+// to get review on patient side after clicking on view more
 export const getAllReviews = async (req, res) => {
   try {
    // const doctorId = req.user.id; 
     const reviews = await Review.find()
       .sort({ createdAt: -1 })
-      .limit(2)
       .populate("patient", "firstName lastName")
       .populate("doctor", "fullName specialization");
 

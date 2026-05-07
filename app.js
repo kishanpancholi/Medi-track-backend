@@ -55,8 +55,6 @@ import connectDB from "./config/db.js";
 import routes from "./routes/index.js";
 import cookieParser from "cookie-parser";
 import cloudinary from "./config/cloudinary.js";
-
-// 🔥 NEW IMPORTS
 import http from "http";
 import { Server } from "socket.io";
 
@@ -65,10 +63,10 @@ connectDB();
 
 const app = express();
 
-// 🔥 CREATE HTTP SERVER (IMPORTANT)
+// CREATE HTTP SERVER (IMPORTANT)
 const server = http.createServer(app);
 
-// 🔥 SOCKET.IO SETUP
+// SOCKET.IO SETUP
 const io = new Server(server, {
   cors: {
     origin: process.env.FRONTEND_URL, // e.g. http://localhost:3000

@@ -30,7 +30,7 @@ export const registerPatient = async (req, res) => {
 
     res.status(201).json({ msg: "Patient Registered Successfully!", patient });
   } catch (error) {
-    res.status(500).json({ msg: "SERVER ERROR", error });
+    res.status(400).json({ msg: error.message});
   }
 };
 

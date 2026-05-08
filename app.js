@@ -84,11 +84,11 @@ io.on("connection", (socket) => {
   // 👇 USER JOINS THEIR ROOM
   socket.on("join", (userId) => {
     socket.join(userId);
-    console.log("📦 Joined room:", userId);
+    // console.log("📦 Joined room:", userId);
   });
  
   socket.on("disconnect", () => {
-    console.log("❌ User disconnected");
+    // console.log("❌ User disconnected");
   });
 });
 
@@ -127,5 +127,5 @@ const PORT = process.env.PORT || 5000;
 
 // ❗ IMPORTANT: use server.listen NOT app.listen
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

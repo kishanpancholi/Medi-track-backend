@@ -19,21 +19,21 @@ export const createPrescription = async (req, res) => {
       notes,
     });
     // const doctorName = req.user.fullName;
-const doctorData = await Doctor.findById(prescription.doctor);
+    const doctorData = await Doctor.findById(prescription.doctor);
 
-const doctorName = doctorData?.fullName || "Doctor";
-const patientId = prescription.patient;
+    const doctorName = doctorData?.fullName || "Doctor";
+    const patientId = prescription.patient;
 
-const notif = notificationMessages.prescription_added(doctorName);
+    const notif = notificationMessages.prescription_added(doctorName);
 
-await sendNotification({
-  userId: patient,
-  role: "Patient",
-  type: "prescription_added",
-  title: notif.title,
-  message: notif.message,
-  link: "/prescriptions",
-});
+    await sendNotification({
+      userId: patient,
+      role: "Patient",
+      type: "prescription_added",
+      title: notif.title,
+      message: notif.message,
+      link: "/prescriptions",
+    });
 
 
     // ⚡ REAL-TIME SOCKET EMIT
@@ -141,22 +141,22 @@ export const updatePrescription = async (req, res) => {
     }
     // const doctorName = req.user.fullName;
 
-const prescription = await Prescription.findById(req.params.id);
-const doctorData = await Doctor.findById(prescription.doctor);
+    const prescription = await Prescription.findById(req.params.id);
+    const doctorData = await Doctor.findById(prescription.doctor);
 
-const doctorName = doctorData?.fullName || "Doctor";
-const patientId = prescription.patient;
+    const doctorName = doctorData?.fullName || "Doctor";
+    const patientId = prescription.patient;
 
-const notif = notificationMessages.prescription_updated(doctorName);
+    const notif = notificationMessages.prescription_updated(doctorName);
 
-await sendNotification({
-  userId: patientId,
-  role: "Patient",
-  type: "prescription_updated",
-  title: notif.title,
-  message: notif.message,
-  link: "/prescriptions",
-});
+    await sendNotification({
+      userId: patientId,
+      role: "Patient",
+      type: "prescription_updated",
+      title: notif.title,
+      message: notif.message,
+      link: "/prescriptions",
+    });
     res.status(200).json({
       success: true,
       message: "Prescription updated successfully",
@@ -191,37 +191,22 @@ export const updateMedicineStatus = async (req, res) => {
     medicine.mStatus = mStatus;
 
     await prescription.save();
-    const patientName = req.user.firstName;
-const medicineName = medicine.name; 
+    const patientName = `${req.user.firstName} ${req.user.lastName}`;
+    const medicineName = medicine.name;
 
-// 👉 Patient notification
-const patientNotif =
-  notificationMessages.medicine_status_updated_patient(medicineName);
+    // 👉 Patient notification
+    // const patientNotif =
+    //   notificationMessages.medicine_status_updated_patient(medicineName);
 
-await sendNotification({
-  userId: req.user.id,
-  role: "Patient",
-  type: "medicine_status_updated",
-  title: patientNotif.title,
-  message: patientNotif.message,
-  link: "/prescriptions",
-});
+    // await sendNotification({
+    //   userId: req.user.id,
+    //   role: "Patient",
+    //   type: "medicine_status_updated",
+    //   title: patientNotif.title,
+    //   message: patientNotif.message,
+    //   link: "/prescriptions",
+    // });
 
-// 👉 Doctor notification
-const doctorNotif =
-  notificationMessages.medicine_status_updated_doctor(
-    patientName,
-    medicineName
-  );
-
-await sendNotification({
-  userId: prescription.doctor,
-  role: "Doctor",
-  type: "medicine_status_updated",
-  title: doctorNotif.title,
-  message: doctorNotif.message,
-  link: "/DoctorPrescription",
-});
     res.status(200).json({
       success: true,
       message: "Medicine status updated",
@@ -246,28 +231,28 @@ export const updatePrescriptionStatus = async (req, res) => {
       { new: true }
     );
 
-const prescription = await Prescription.findById(req.params.id)
-  .populate("doctor", "fullName");
+    const prescription = await Prescription.findById(req.params.id)
+      .populate("doctor", "fullName");
 
-const patientId = prescription.patient;
+    const patientId = prescription.patient;
 
-const doctorData = await Doctor.findById(prescription.doctor);
+    const doctorData = await Doctor.findById(prescription.doctor);
 
-const doctorName = doctorData?.fullName || "Doctor";
+    const doctorName = doctorData?.fullName || "Doctor";
 
-const notif = notificationMessages.prescription_status_updated(
-  doctorName,
-  pStatus
-);
+    const notif = notificationMessages.prescription_status_updated(
+      doctorName,
+      pStatus
+    );
 
-await sendNotification({
-  userId: patientId,
-  role: "Patient",
-  type: "prescription_status_updated",
-  title: notif.title,
-  message: notif.message,
-  link: "/prescriptions",
-});
+    await sendNotification({
+      userId: patientId,
+      role: "Patient",
+      type: "prescription_status_updated",
+      title: notif.title,
+      message: notif.message,
+      link: "/prescriptions",
+    });
     res.status(200).json({
       success: true,
       message: "Prescription status updated",

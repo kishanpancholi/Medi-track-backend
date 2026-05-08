@@ -72,15 +72,15 @@ prescription_status_updated: (doctor, status) => ({
   message: `Dr. ${doctor} marked your prescription as ${status}`,
 }),
 
-medicine_status_updated_patient: (medicine) => ({
-  title: "Medicine Updated",
-  message: `You marked ${medicine} as taken`,
-}),
+// medicine_status_updated_patient: (medicine) => ({
+//   title: "Medicine Updated",
+//   message: `You marked ${medicine} as taken`,
+// }),
 
-medicine_status_updated_doctor: (patient, medicine) => ({
-  title: "Medicine Update",
-  message: `${patient} marked ${medicine} as taken`,
-}),
+// medicine_status_updated_doctor: (patient, medicine) => ({
+//   title: "Medicine Update",
+//   message: `${patient} marked ${medicine} as taken`,
+// }),
 
   // ⭐ Review Added (Patient → Doctor)
  review_added: (patient, rating) => ({

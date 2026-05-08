@@ -156,22 +156,11 @@ const calculateAge = (dob) => {
 // GET ALL PATIENTS (for Patient List page)
 export const getPatients = async (req, res) => {
   try {
-    const patients = await Patient.find().sort({ createdAt: -1 });
+    const patients = await Patient.find()
+       .select("-password")
+      .sort({ createdAt: -1 });
 
-    // format data for frontend
-    const formattedPatients = patients.map((p) => ({
-      _id: p._id,
-      name: `${p.firstName} ${p.lastName}`,
-      age: calculateAge(p.dob),
-      gender: p.gender,
-      phone: p.mobile,
-      email: p.email,
-      address: p.address,
-      city: p.city,
-      createdAt: p.createdAt,
-    }));
-
-    res.json(formattedPatients);
+    res.json(patients);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

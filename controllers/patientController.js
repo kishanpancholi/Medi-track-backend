@@ -1,7 +1,6 @@
 import Patient from "../models/Patient.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-// import { sendEmail } from "../config/email.js";
 import { sendOtpService, verifyOtpService, resetPasswordService } from "../utils/forgotPassword.js";
 
 export const registerPatient = async (req, res) => {
@@ -84,14 +83,14 @@ export const completePatientProfile = async (req, res) => {
   try {
     const patientId = req.user.id;
 
+    // Find existing patient
+    const existingPatient = await Patient.findById(patientId);
+
+    if (!existingPatient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
     const {
-      firstName,
-      lastName,
-      gender,
-      dob,
-      mobile,
-      email,
-      address,
       city,
       state,
       pincode,
@@ -106,13 +105,16 @@ export const completePatientProfile = async (req, res) => {
     const updatedPatient = await Patient.findByIdAndUpdate(
       patientId,
       {
-        firstName,
-        lastName,
-        gender,
-        dob,
-        mobile,
-        email,
-        address,
+        // Old registered data remains same
+        firstName: existingPatient.firstName,
+        lastName: existingPatient.lastName,
+        gender: existingPatient.gender,
+        dob: existingPatient.dob,
+        mobile: existingPatient.mobile,
+        email: existingPatient.email,
+        address: existingPatient.address,
+
+        // New profile completion data
         city,
         state,
         pincode,

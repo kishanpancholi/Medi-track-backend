@@ -3,6 +3,8 @@ import Notification from "../models/Notification.js";
 import { notificationMessages } from "../utils/notificationMessages.js";
 import { sendNotification } from "../utils/sendNotification.js";
 import { NOTIFICATION_EVENTS } from "../utils/notificationEvents.js";
+import Patient from "../models/Patient.js";
+import Doctor from "../models/Doctor.js";
 
 // Doctor creates prescription
 export const createPrescription = async (req, res) => {
@@ -16,7 +18,11 @@ export const createPrescription = async (req, res) => {
       medicines,
       notes,
     });
-    const doctorName = req.user.fullName;
+    // const doctorName = req.user.fullName;
+const doctorData = await Doctor.findById(prescription.doctor);
+
+const doctorName = doctorData?.fullName || "Doctor";
+const patientId = prescription.patient;
 
 const notif = notificationMessages.prescription_added(doctorName);
 
@@ -133,9 +139,12 @@ export const updatePrescription = async (req, res) => {
         message: "Prescription not found",
       });
     }
-    const doctorName = req.user.fullName;
+    // const doctorName = req.user.fullName;
 
 const prescription = await Prescription.findById(req.params.id);
+const doctorData = await Doctor.findById(prescription.doctor);
+
+const doctorName = doctorData?.fullName || "Doctor";
 const patientId = prescription.patient;
 
 const notif = notificationMessages.prescription_updated(doctorName);
@@ -236,10 +245,15 @@ export const updatePrescriptionStatus = async (req, res) => {
       { pStatus },
       { new: true }
     );
-    const doctorName = req.user.fullName;
 
-const prescription = await Prescription.findById(req.params.id);
+const prescription = await Prescription.findById(req.params.id)
+  .populate("doctor", "fullName");
+
 const patientId = prescription.patient;
+
+const doctorData = await Doctor.findById(prescription.doctor);
+
+const doctorName = doctorData?.fullName || "Doctor";
 
 const notif = notificationMessages.prescription_status_updated(
   doctorName,

@@ -3,15 +3,17 @@ import mongoose from "mongoose";
 const doctorSchema = new mongoose.Schema(
   {
     // fullName: { type: String, required: true },
-    fullName: {type: String,required: true,trim: true,
-  set: (value) => {
-    // remove "Dr", "Dr.", "dr", etc.
-    return value.replace(/^dr\.?\s*/i, "").trim();
-  }},
+    fullName: {
+      type: String, required: true, trim: true,
+      set: (value) => {
+        // remove "Dr", "Dr.", "dr", etc.
+        return value.replace(/^dr\.?\s*/i, "").trim();
+      }
+    },
     gender: { type: String },
     dob: { type: String },
     specialization: { type: String, required: true },
-    qualification: { type: String, required: true  },
+    qualification: { type: String, required: true },
     mobile: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
@@ -43,12 +45,21 @@ const doctorSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending"
     },
-    serviceType:{
+    serviceType: {
       type: [String],
       enum: ["physical", "videocall"],
-      default:["physical"]
+      default: ["physical"]
     },
-    
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    totalReviews: {
+      type: Number,
+      default: 0
+    },
     isProfileComplete: { type: Boolean, default: false },
   },
   { timestamps: true },

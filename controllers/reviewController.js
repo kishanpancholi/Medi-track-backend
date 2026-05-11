@@ -1,19 +1,45 @@
 // POST /api/reviews
 import Review from "../models/Review.js";
+import Doctor from "../models/Doctor.js";
+import Patient from "../models/Patient.js";
 import { notificationMessages } from "../utils/notificationMessages.js";
-import { sendNotification } from "../utils/sendNotification.js";  
+import { sendNotification } from "../utils/sendNotification.js";
+import mongoose from "mongoose";
 
 export const addReview = async (req, res) => {
   try {
     const { doctorId, rating, comment } = req.body;
- 
+
     const review = await Review.create({
       doctor: doctorId,
       patient: req.user.id,
       rating,
       comment,
     });
-       const patientName = `${req.user.firstName} ${req.user.lastName}`;
+
+    const stats = await Review.aggregate([
+      { $match: { doctor: new mongoose.Types.ObjectId(doctorId) } },
+      {
+        $group: {
+          _id: "$doctor",
+          avgRating: { $avg: "$rating" },
+          totalReviews: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // 🔥 Update doctor document
+    await Doctor.findByIdAndUpdate(
+      doctorId,
+      {
+        averageRating: stats[0]?.avgRating || 0,
+        totalReviews: stats[0]?.totalReviews || 0
+      },
+      { new: true, runValidators: true }
+    );
+
+    const patientData = await Patient.findById(req.user.id).select("firstName lastName");
+    const patientName = `${patientData.firstName} ${patientData.lastName}`;
 
     const notif = notificationMessages.review_added(
       patientName,
@@ -89,8 +115,8 @@ export const getDoctorReviews = async (req, res) => {
       totalReviews === 0
         ? 0
         : (
-            reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
-          ).toFixed(1);
+          reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+        ).toFixed(1);
 
     // rating distribution
     const ratingCount = {
@@ -125,7 +151,7 @@ export const getDoctorReviews = async (req, res) => {
 // to get review on patient side after clicking on view more
 export const getAllReviews = async (req, res) => {
   try {
-   // const doctorId = req.user.id; 
+    // const doctorId = req.user.id; 
     const reviews = await Review.find()
       .sort({ createdAt: -1 })
       .populate("patient", "firstName lastName")

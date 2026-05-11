@@ -1,7 +1,7 @@
 import mongoose, { Types } from "mongoose";
 import Doctor from "./Doctor.js";
 
-const reviewSchema =  new mongoose.Schema({
+const reviewSchema = new mongoose.Schema({
     doctor: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Doctor",
@@ -15,10 +15,12 @@ const reviewSchema =  new mongoose.Schema({
     rating: {
         type: Number,
         required: true,
+        min: 1,
+        max: 5
     },
     comment: {
         type: String,
-    },  
-},{timestamps: true})
+    },
+}, { timestamps: true })
 
 export default mongoose.model("Review", reviewSchema);

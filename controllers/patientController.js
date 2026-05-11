@@ -30,7 +30,7 @@ export const registerPatient = async (req, res) => {
 
     res.status(201).json({ msg: "Patient Registered Successfully!", patient });
   } catch (error) {
-    res.status(500).json({ msg: "SERVER ERROR", error });
+    res.status(400).json({ msg: error.message});
   }
 };
 
@@ -154,13 +154,45 @@ const calculateAge = (dob) => {
 };
 
 // GET ALL PATIENTS (for Patient List page)
+// export const getPatients = async (req, res) => {
+//   try {
+//     const patients = await Patient.find()
+//        .select("-password")
+//       .sort({ createdAt: -1 });
+
+//     res.json(patients);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 export const getPatients = async (req, res) => {
   try {
     const patients = await Patient.find()
-       .select("-password")
+      .select("-password")
       .sort({ createdAt: -1 });
 
-    res.json(patients);
+    // format data for frontend
+    const formattedPatients = patients.map((p) => ({
+      _id: p._id,
+
+      // Full Name
+      name: `${p.firstName} ${p.lastName}`,
+
+      // Calculate Age
+      age: calculateAge(p.dob),
+
+      // Other Fields
+      gender: p.gender,
+      phone: p.mobile,
+      email: p.email,
+      address: p.address,
+      city: p.city,
+      createdAt: p.createdAt,
+    }));
+
+    res.json(formattedPatients);
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

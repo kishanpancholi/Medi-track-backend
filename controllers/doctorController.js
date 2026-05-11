@@ -345,6 +345,7 @@ export const logoutDoctor = (req, res) => {
   res.status(200).json({ message: "Logout successful" });
 };
 
+// 
 export const getFilteredDoctors = async (req, res) => {
   try {
     const {
@@ -397,7 +398,7 @@ export const getFilteredDoctors = async (req, res) => {
 
     // Rating (only if exists in schema)
     if (rating) {
-      query.rating = { $gte: Number(rating) };
+      query.averageRating = { $gte: Number(rating) };
     }
 
     let doctors = await Doctor.find(query);

@@ -27,9 +27,7 @@ export const createRecord = async (req, res) => {
       return res.status(400).json({ message: "File is required" });
     }
 
-    console.log("UPLOAD DEBUG:", req.file); // 🔥 ADD THIS
-
-    const fileUrl = req.file.path; // ✅ NO CHANGE
+    const fileUrl = req.file.path;
     const fileName = req.file.originalname;
 
     const safeDate = new Date(date);

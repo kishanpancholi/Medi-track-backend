@@ -2,15 +2,6 @@ import MedicalRecord from "../models/MedicalRecord.js";
 import Patient from "../models/Patient.js";
 import { sendNotification } from "../utils/sendNotification.js";
 import { notificationMessages } from "../utils/notificationMessages.js";
-// ➤ Create Record
-// export const createRecord = async (req, res) => {
-//   try {
-//     const record = await MedicalRecord.create(req.body);
-//     res.status(201).json(record);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
 
 export const createRecord = async (req, res) => {
   try {
@@ -26,17 +17,17 @@ export const createRecord = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    if (!["Report", "scan", "prescription"].includes(type)) {
+    if (!["report", "scan", "prescription"].includes(type)) {
       return res.status(400).json({ message: "Invalid type" });
     }
+
+    const normalizedType = type.toLowerCase();
 
     if (!req.file) {
       return res.status(400).json({ message: "File is required" });
     }
 
-    console.log("UPLOAD DEBUG:", req.file); // 🔥 ADD THIS
-
-    const fileUrl = req.file.path; // ✅ NO CHANGE
+    const fileUrl = req.file.path;
     const fileName = req.file.originalname;
 
     const safeDate = new Date(date);
@@ -47,7 +38,7 @@ export const createRecord = async (req, res) => {
     const record = await MedicalRecord.create({
       patient: userId,
       title: title.trim(),
-      type,
+      type: normalizedType,
       doctor: doctorId,
       date: safeDate,
       description,
@@ -56,19 +47,19 @@ export const createRecord = async (req, res) => {
       uploadedBy: "patient",
     });
     const patientData = await Patient.findById(userId);
+    const patientName = `${patientData.firstName} ${patientData.lastName}`;
 
-   const notif = notificationMessages.record_uploaded(patientName);
+    const notif = notificationMessages.record_uploaded(patientName);
 
-await sendNotification({
-  userId: doctorId,
-  role: "Doctor",
-  type: "record_uploaded",
-  title: notif.title,
-  message: notif.message,
-  link: "/DoctorMedicalRecords",
-});
+    await sendNotification({
+      userId: doctorId,
+      role: "Doctor",
+      type: "record_uploaded",
+      title: notif.title,
+      message: notif.message,
+      link: "/DoctorMedicalRecords",
+    });
     return res.status(201).json(record);
-
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -85,17 +76,16 @@ export const getPatientRecords = async (req, res) => {
 
     const records = await MedicalRecord.find({
       doctor: doctorId,
-      patient: patientId
+      patient: patientId,
     }).sort({ date: -1 });
 
     res.json({ records });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// ➤ Get Single Record
+// Get Single Record
 export const getRecordById = async (req, res) => {
   try {
     const record = await MedicalRecord.findById(req.params.id);
@@ -126,7 +116,6 @@ export const deleteRecord = async (req, res) => {
     await record.deleteOne();
 
     res.json({ message: "Deleted successfully" });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -145,13 +134,13 @@ export const calculateAge = (dob) => {
 
   return age;
 };
-// load patient names in dropdown on doctor side medical records page 
+// load patient names in dropdown on doctor side medical records page
 export const getDoctorPatients = async (req, res) => {
   try {
     const doctorId = req.user.id;
 
     const records = await MedicalRecord.find({
-      doctor: doctorId
+      doctor: doctorId,
     }).select("patient");
 
     // console.log("Records Found:", records);
@@ -159,24 +148,23 @@ export const getDoctorPatients = async (req, res) => {
     const patientIds = [
       ...new Set(
         records
-          .filter(r => r.patient) // ✅ FIX
-          .map(r => r.patient.toString())
-      )
+          .filter((r) => r.patient) // ✅ FIX
+          .map((r) => r.patient.toString()),
+      ),
     ];
 
     const patients = await Patient.find({
-      _id: { $in: patientIds }
+      _id: { $in: patientIds },
     }).select("firstName lastName dob gender");
 
-    const formattedPatients = patients.map(p => ({
+    const formattedPatients = patients.map((p) => ({
       _id: p._id,
       name: `${p.firstName} ${p.lastName}`,
       age: calculateAge(p.dob),
-      gender: p.gender
+      gender: p.gender,
     }));
 
     res.json(formattedPatients);
-
   } catch (err) {
     console.log("ERROR:", err);
     res.status(500).json({ message: err.message });
@@ -193,13 +181,12 @@ export const getMyRecords = async (req, res) => {
     }
 
     const records = await MedicalRecord.find({
-      patient: userId
+      patient: userId,
     })
-    .populate("doctor", "fullName")
-    .sort({ date: -1 });
+      .populate("doctor", "fullName")
+      .sort({ date: -1 });
 
     res.json({ records });
-
   } catch (error) {
     console.log("GET MY RECORDS ERROR:", error); // 🔥 IMPORTANT
     res.status(500).json({ message: error.message });

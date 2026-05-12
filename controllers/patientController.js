@@ -49,10 +49,7 @@ export const loginPatient = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Incorrect Password" });
     }
-    // if (user.password !== password) {
-    //   return res.status(400).json({ message: "Incorrect Password" });
-    // }
-
+    
     // After login we create token:
     const token = jwt.sign(
       { id: user._id, role:"patient"},
@@ -67,12 +64,7 @@ export const loginPatient = async (req, res) => {
       path: "/",
       maxAge: 24 * 60 * 60* 1000,// cookie valid for the 1 day
     })
-    
-    // .status(200).json({
-    //   message: "Login Successful",
-    //   token,
-    //   user,
-    // });
+   
     res.status(200).json({
   message: "Login Successful",
   token,
@@ -161,19 +153,6 @@ const calculateAge = (dob) => {
   return Math.abs(ageDate.getUTCFullYear() - 1970);
 };
 
-// GET ALL PATIENTS (for Patient List page)
-// export const getPatients = async (req, res) => {
-//   try {
-//     const patients = await Patient.find()
-//        .select("-password")
-//       .sort({ createdAt: -1 });
-
-//     res.json(patients);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
 export const getPatients = async (req, res) => {
   try {
     const patients = await Patient.find()
@@ -201,16 +180,6 @@ export const getPatients = async (req, res) => {
 
     res.json(formattedPatients);
 
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// DELETE PATIENT
-export const deletePatient = async (req, res) => {
-  try {
-    await Patient.findByIdAndDelete(req.params.id);
-    res.json({ message: "Patient deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

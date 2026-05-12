@@ -1,4 +1,3 @@
-// POST /api/reviews
 import Review from "../models/Review.js";
 import Doctor from "../models/Doctor.js";
 import Patient from "../models/Patient.js";
@@ -27,8 +26,7 @@ export const addReview = async (req, res) => {
         }
       }
     ]);
-
-    // 🔥 Update doctor document
+    
     await Doctor.findByIdAndUpdate(
       doctorId,
       {
@@ -107,10 +105,8 @@ export const getDoctorReviews = async (req, res) => {
       .populate("patient", "firstName lastName")
       .sort({ createdAt: -1 })
 
-    // total reviews
     const totalReviews = reviews.length;
 
-    // average rating
     const avgRating =
       totalReviews === 0
         ? 0
@@ -134,7 +130,6 @@ export const getDoctorReviews = async (req, res) => {
     // latest 2 reviews
     const latestReviews = reviews.slice(0, 2);
 
-    // response
     res.json({
       totalReviews,
       avgRating,

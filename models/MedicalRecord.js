@@ -34,10 +34,10 @@ const medicalRecordSchema = new mongoose.Schema(
     //   default: "patient",
     // },
     // fileUrl: String,
-    fileName: String,   // ADD THIS
-    fileType: String,   // optional but useful
+    fileName: String, 
+    fileType: String, 
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("MedicalRecord", medicalRecordSchema);

@@ -53,13 +53,6 @@ export const loginDoctor = async (req, res) => {
       return res.status(400).json({ message: "Email Not Registerd" });
     }
 
-    // if admin will not approved it will show this msg to doctor
-    /* if (doc.status !== "approved") {
-      return res.status(403).json({
-        message: "Your account is not approved yet",
-      });
-    } */
-
     const isMatch = await bcrypt.compare(password, doc.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Incorrect Password" });
@@ -115,7 +108,7 @@ export const getDoctorNames = async (req, res) => {
 export const completeDoctorProfile = async (req, res) => {
   try {
 
-    // ✅ check auth
+    // check auth
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -191,11 +184,51 @@ export const getAllDoctor = async (req, res) => {
     // Fetch all doctors (you can sort if needed)
     const doctors = await Doctor.find().sort({ createdAt: -1 });
 
+    // Dynamic Specializations
+     const specializations = [
+      ...new Set(
+        doctors
+          .map((doc) => doc.specialization)
+          .filter(Boolean)
+      ),
+    ];
+
+    // Experience Dropdown
+     const experienceRanges = [
+      {
+        label: "0 - 5 Years",
+        value: "0-5",
+      },
+      {
+        label: "6 - 10 Years",
+        value: "6-10",
+      },
+      {
+        label: "10+ Years",
+        value: "10+",
+      },
+    ];
+
+    // Status Dropdown
+     const statuses = [
+      ...new Set(
+        doctors
+          .map((doc) => doc.status)
+          .filter(Boolean)
+      ),
+    ];
+
     // Send response
     res.status(200).json({
       success: true,
       count: doctors.length,
       doctors,
+
+      filters: {
+        specializations,
+        experienceRanges,
+        statuses,
+      },
     });
 
   } catch (error) {
@@ -244,7 +277,6 @@ const cookieOptions = {
   sameSite: "None",
   path: "/", // VERY IMPORTANT
 };
-
 
 //show male & female chart in doctor dashboard
 export const getGender = async (req, res) => {

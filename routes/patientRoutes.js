@@ -6,7 +6,6 @@ import {
   getPatients,
   getPatientProfile,
   updatePatientProfile,
-  deletePatient,
   logoutPatient,
   sendOtp,
   verifyOtp,
@@ -39,6 +38,5 @@ router.get("/profile", protect, authorize("patient"), (req, res) => {
 
 // Patient List APIs
 router.get("/list", getPatients); // GET all patients in admin side in patient page
-router.delete("/:id", deletePatient); // DELETE patient
 
 export default router;

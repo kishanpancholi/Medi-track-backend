@@ -68,11 +68,19 @@ export const loginPatient = async (req, res) => {
       maxAge: 24 * 60 * 60* 1000,// cookie valid for the 1 day
     })
     
-    .status(200).json({
-      message: "Login Successful",
-      token,
-      user,
-    });
+    // .status(200).json({
+    //   message: "Login Successful",
+    //   token,
+    //   user,
+    // });
+    res.status(200).json({
+  message: "Login Successful",
+  token,
+  user: {
+    ...user._doc,
+    role: "Patient", // 🔥 ADD THIS LINE
+  },
+});
   } catch (err) {
     console.log("error",err);
     res.status(500).json({ message: "Server Error" });

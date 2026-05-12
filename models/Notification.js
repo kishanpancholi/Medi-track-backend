@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["Patient", "Doctor"],
+      enum: ["Patient", "Doctor", "Admin"],
       required: true,
     },
 
@@ -26,11 +26,11 @@ const notificationSchema = new mongoose.Schema(
         "appointment_completed",
         "record_uploaded",
         "prescription_added",
-        "prescription_added",
         "prescription_updated",
         "prescription_status_updated",
         "medicine_status_updated",
         "review_added",
+        "admin_message",
       ],
       required: true,
     },

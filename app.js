@@ -86,6 +86,10 @@ io.on("connection", (socket) => {
     socket.join(userId);
     // console.log("📦 Joined room:", userId);
   });
+    socket.on("joinRole", (role) => {
+  socket.join(role);
+  console.log("Joined role room:", role);
+});
  
   socket.on("disconnect", () => {
     // console.log("❌ User disconnected");

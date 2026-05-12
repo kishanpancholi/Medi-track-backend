@@ -56,6 +56,7 @@ export const createRecord = async (req, res) => {
       uploadedBy: "patient",
     });
     const patientData = await Patient.findById(userId);
+    const patientName = `${patientData.firstName} ${patientData.lastName}`;
 
    const notif = notificationMessages.record_uploaded(patientName);
 

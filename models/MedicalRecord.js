@@ -19,7 +19,7 @@ const medicalRecordSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["lab", "scan", "prescription"],
+      enum: ["report", "scan", "prescription"],
       required: true,
     },
     date: {
@@ -34,7 +34,7 @@ const medicalRecordSchema = new mongoose.Schema(
     //   default: "patient",
     // },
     // fileUrl: String,
-    fileName: String,   // ✅ ADD THIS
+    fileName: String,   // ADD THIS
     fileType: String,   // optional but useful
   },
   { timestamps: true }

@@ -59,7 +59,64 @@ export const getUnreadCount = async (req, res) => {
     res.status(500).json({ message: "Error fetching count" });
   }
 };
+export const getAdminNotifications = async (req, res) => {
+  try {
+    const notifications = await Notification.find({
+      type: "admin_message"
+    }).sort({ createdAt: -1 });
 
+    res.json(notifications);
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error fetching admin notifications" });
+  }
+};
+export const deleteNotification = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("Deleting ID:", id); // 🔥 DEBUG
+
+    const deleted = await Notification.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        message: "Notification not found",
+      });
+    }
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error deleting" });
+  }
+};
+// export const deleteNotification = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     const deleted = await Notification.findByIdAndDelete(id);
+
+//     if (!deleted) {
+//       return res.status(404).json({
+//         message: "Notification not found",
+//       });
+//     }
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Notification deleted successfully",
+//     });
+
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({
+//       message: "Error deleting notification",
+//     });
+//   }
+// };
 export const sendAdminNotification = async (req, res) => {
   try {
     const { target, message } = req.body;

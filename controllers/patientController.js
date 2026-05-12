@@ -145,11 +145,16 @@ export const completePatientProfile = async (req, res) => {
         runValidators: true // it make sure that schema validations are applied during update
       }
     ).select("-password");
-
+    await sendNotification({
+  title: "Profile Completed",
+  message: `${existingPatient.firstName} completed their profile.`,
+  role: "Admin",
+  type: "patient_profile_completed",
+});
     if (!updatedPatient) {
       return res.status(404).json({ message: "Patient not found" });
     }
-
+  
     res.status(200).json({
       message: "Profile completed successfully",
       patient: updatedPatient,
@@ -230,7 +235,12 @@ export const updatePatientProfile = async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     ).select("-password");
-
+    await sendNotification({
+  title: "Profile Updated",
+  message: `Patient ${updated.firstName} updated profile details.`,
+  role: "Admin",
+  type: "patient_profile_updated",
+});
     res.json({ patient: updated });
   } catch (err) {
     res.status(500).json({ message: err.message });

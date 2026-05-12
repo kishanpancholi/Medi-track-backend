@@ -90,7 +90,10 @@ io.on("connection", (socket) => {
   socket.join(role);
   console.log("Joined role room:", role);
 });
- 
+   socket.on("joinAll", () => {
+    socket.join("ALL_USERS");
+    console.log("Joined ALL_USERS room");
+  });
   socket.on("disconnect", () => {
     // console.log("❌ User disconnected");
   });

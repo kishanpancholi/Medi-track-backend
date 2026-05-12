@@ -4,19 +4,6 @@ import { sendNotification } from "../utils/sendNotification.js";
 import Admin from "../models/Admin.js";
 import mongoose from "mongoose";
 
-// export const getNotifications = async (req, res) => {
-//   try {
-//     const userId = req.user._id || req.user.id;
-//     const notifications = await Notification.find({ userId })
-//       .sort({ createdAt: -1 });
-
-//     res.json(notifications);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ message: "Error fetching notifications" });
-//   }
-// };
-
 // ✅ MARK AS READ
 
 export const getNotifications = async (req, res) => {
@@ -31,7 +18,8 @@ export const getNotifications = async (req, res) => {
     const notifications = await Notification.find({
       $or: [
         { userId: userId },
-        { type: "admin_message", role: formattedRole }
+        { type: "admin_message", role: formattedRole },
+        { type: "admin_message", role: "ALL" } 
       ]
     }).sort({ createdAt: -1 });
 
@@ -82,32 +70,74 @@ export const sendAdminNotification = async (req, res) => {
       });
     }
 
-    // 🔥 SYSTEM FAKE USER ID (required by schema)
-    const systemUserId = new mongoose.Types.ObjectId();
-
-    const notification = await Notification.create({
-      userId: systemUserId,   // ✅ FIX (satisfies schema)
-      role: target,
+    let notificationData = {
       type: "admin_message",
       message,
-    });
+    };
 
-    // 🔥 SOCKET EMIT (your system stays unchanged)
-    io.to(target).emit("newNotification", {
-      message,
-      type: "admin_message",
-    });
+    // 🎯 CASE 1: ALL USERS
+    if (target === "ALL") {
+      notificationData.role = "ALL";
 
-    return res.status(200).json({
-      success: true,
-      message: "Notification sent",
-      data: notification,
-    });
+      const notification = await Notification.create(notificationData);
+
+      io.to("ALL_USERS").emit("newNotification", notification);
+
+      return res.json({ success: true, data: notification });
+    }
+
+    // 🎯 CASE 2: Role-based
+    notificationData.role = target;
+
+    const notification = await Notification.create(notificationData);
+
+    io.to(target).emit("newNotification", notification);
+
+    return res.json({ success: true, data: notification });
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
+
+
+// export const sendAdminNotification = async (req, res) => {
+//   try {
+//     const { target, message } = req.body;
+
+//     if (!target || !message) {
+//       return res.status(400).json({
+//         message: "Missing target or message",
+//       });
+//     }
+
+//     // 🔥 SYSTEM FAKE USER ID (required by schema)
+//     const systemUserId = new mongoose.Types.ObjectId();
+
+//     const notification = await Notification.create({
+//       userId: systemUserId,   // ✅ FIX (satisfies schema)
+//       role: target,
+//       type: "admin_message",
+//       message,
+//     });
+
+//     // 🔥 SOCKET EMIT (your system stays unchanged)
+//     io.to(target).emit("newNotification", {
+//       message,
+//       type: "admin_message",
+//     });
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Notification sent",
+//       data: notification,
+//     });
+
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).json({
+//       message: error.message,
+//     });
+//   }
+// };

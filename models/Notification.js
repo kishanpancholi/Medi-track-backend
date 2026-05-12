@@ -4,13 +4,13 @@ const notificationSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      refPath: "role", // 🔥 dynamic ref (Patient / Doctor)
+      required: false, 
+      refPath: "role", 
     },
 
     role: {
       type: String,
-      enum: ["Patient", "Doctor", "Admin"],
+      enum: ["Patient", "Doctor", "Admin", "ALL"],
       required: true,
     },
 

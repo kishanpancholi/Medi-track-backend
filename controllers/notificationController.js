@@ -28,17 +28,12 @@ export const getNotifications = async (req, res) => {
     const formattedRole =
       role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
-    console.log("🔍 Original Role:", role);
-    console.log("🔍 Formatted Role:", formattedRole);
-
     const notifications = await Notification.find({
       $or: [
         { userId: userId },
         { type: "admin_message", role: formattedRole }
       ]
     }).sort({ createdAt: -1 });
-
-    console.log("🎯 Final Notifications:", notifications);
 
     res.json(notifications);
 

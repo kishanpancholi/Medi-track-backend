@@ -31,6 +31,7 @@ const notificationSchema = new mongoose.Schema(
         "medicine_status_updated",
         "review_added",
         "admin_message",
+        "patient_registered", 
       ],
       required: true,
     },

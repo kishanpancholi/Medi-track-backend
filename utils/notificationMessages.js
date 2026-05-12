@@ -87,4 +87,10 @@ prescription_status_updated: (doctor, status) => ({
   title: "New Review",
   message: `${patient} gave you a ${rating}★ review`,
 }),
+
+patient_registered: (patient) => ({
+  title: "New Patient Registered",
+  message: `${patient} registered successfully`,
+}),
+
 };

@@ -1,7 +1,7 @@
 import express from "express";
 import {
   getNotifications,
-  markAsRead,getUnreadCount,sendAdminNotification,getAdminNotifications,deleteNotification
+  markAsRead,getUnreadCount,sendAdminNotification,getAdminNotifications,deleteSingleNotification,clearAllNotifications
 } from "../controllers/notificationController.js";
 
 // ✅ USE YOUR EXISTING MIDDLEWARE
@@ -25,6 +25,7 @@ router.get("/admin-notifications", protect, getAdminNotifications);
 
 // ✅ ADMIN → DELETE NOTIFICATION
 // router.delete("/admin-notifications/:id", protect, deleteNotification);
-router.delete("/delete/:id", protect, deleteNotification);
+router.delete("/delete/:id", protect, deleteSingleNotification);
+router.delete("/clear-all", protect, clearAllNotifications);
 
 export default router;

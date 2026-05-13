@@ -4,8 +4,8 @@ const notificationSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: false, 
-      refPath: "role", 
+      required: false,
+      refPath: "role",
     },
 
     role: {
@@ -31,6 +31,18 @@ const notificationSchema = new mongoose.Schema(
         "medicine_status_updated",
         "review_added",
         "admin_message",
+        "patient_registered",
+        "patient_profile_completed",
+        "patient_profile_updated",
+        "patient_login",
+        "patient_password_reset",
+        "otp_sent",
+        "otp_verified",
+        "doctor_registered",
+        "doctor_login", 
+        "doctor_profile_completed",
+        "doctor_profile_updated",
+        "doctor_status_updated",
       ],
       required: true,
     },

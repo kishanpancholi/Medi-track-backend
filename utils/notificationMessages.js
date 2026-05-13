@@ -87,4 +87,22 @@ prescription_status_updated: (doctor, status) => ({
   title: "New Review",
   message: `${patient} gave you a ${rating}★ review`,
 }),
+
+patient_registered: (patient) => ({
+  title: "New Patient Registered",
+  message: `${patient} registered successfully`,
+}),
+patient_profile_completed: (patient) => ({
+  title: "Profile Completed",
+  message: `${patient} completed their profile`,
+}),
+patient_profile_updated: (patient) => ({
+  title: "Profile Updated",
+  message: `${patient} updated profile details`,
+}),
+patient_login: (patient) => ({
+  title: "Patient Login",
+  message: `${patient} just logged in`,
+}),
+
 };

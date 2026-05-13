@@ -35,7 +35,12 @@ export const registerDoctor = async (req, res) => {
       experience,
       licenseNumber,
     });
-
+await sendNotification({
+  title: "New Doctor Registered",
+  message: `${fullName} has registered as a doctor.`,
+  role: "Admin",
+  type: "doctor_registered",
+});
     res.status(201).json({ msg: "Doctor registered successfully!", doctor });
   } catch (error) {
     res.status(500).json({ msg: "Server error", error: error.message });
@@ -72,6 +77,13 @@ export const loginDoctor = async (req, res) => {
       path: "/",
       sameSite: "None",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
+    await sendNotification({
+      title: "Doctor Login",
+      message: `${doc.fullName} just logged in`,
+      role: "Admin",
+      type: "doctor_login",
     });
 
     res.status(200).json({
@@ -167,7 +179,12 @@ export const completeDoctorProfile = async (req, res) => {
     if (!updatedDoctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-
+await sendNotification({
+  title: "Doctor Profile Completed",
+  message: `${updatedDoctor.fullName} completed their profile.`,
+  role: "Admin",
+  type: "doctor_profile_completed",
+});
     res.status(200).json({
       success: true,
       message: "Profile completed successfully",
@@ -260,7 +277,12 @@ export const updateDoctorStatus = async (req, res) => {
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-
+await sendNotification({
+  title: `Doctor ${status}`,
+  message: `Dr. ${doctor.fullName} has been ${status}.`,
+  role: "Admin",
+  type: "doctor_status_updated",
+});
     res.status(200).json({
       message: `Doctor ${status} successfully`,
       doctor,

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Appointment from "../models/Appointment.js";
 import { sendOtpService, verifyOtpService, resetPasswordService } from "../utils/forgotPassword.js";
+import { sendNotification } from "../utils/sendNotification.js";
 
 export const registerDoctor = async (req, res) => {
   try {

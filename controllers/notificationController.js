@@ -210,8 +210,9 @@ export const sendAdminNotification = async (req, res) => {
 
 export const deleteSingleNotification = async (req, res) => {
   try {
-    const userId = req.user._id;
-    const role = req.user.role;
+    const userId = req.user?._id || req.user?.id;
+    const role = req.user?.role;
+    // const role = req.user.role;
     const { id } = req.params;
 
     const notification = await Notification.findById(id);
@@ -251,8 +252,8 @@ export const deleteSingleNotification = async (req, res) => {
 
 export const clearAllNotifications = async (req, res) => {
   try {
-    const userId = req.user._id;
-    const role = req.user.role;
+    const userId = req.user?._id || req.user?.id;
+    const role = req.user?.role;
 
     // 🔥 1. DELETE ALL PERSONAL NOTIFICATIONS
     await Notification.deleteMany({

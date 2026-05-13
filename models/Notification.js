@@ -54,9 +54,19 @@ const notificationSchema = new mongoose.Schema(
 
     link: {
       type: String, // where to redirect on click
-      default: "/",
+      // default: "/",
     },
-
+  deletedBy: [
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
+    role: {
+      type: String,
+      enum: ["Patient", "Doctor", "Admin"],
+    },
+  },
+],
     isRead: {
       type: Boolean,
       default: false,

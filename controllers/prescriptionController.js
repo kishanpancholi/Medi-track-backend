@@ -287,7 +287,7 @@ export const getActivePrescriptions = async (req, res) => {
   try {
     const prescriptions = await Prescription.find({
       patient: req.user.id,
-      pStatus: "active", // or status depending on your schema
+      pStatus: "Active", // or status depending on your schema
     })
       .populate("doctor", "fullName specialization")
       .sort({ createdAt: -1 });

@@ -58,7 +58,6 @@ import cloudinary from "./config/cloudinary.js";
 import http from "http";
 import { Server } from "socket.io";
 
-// 🔗 Connect DB
 connectDB();
 
 const app = express();
@@ -69,7 +68,7 @@ const server = http.createServer(app);
 // SOCKET.IO SETUP
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL, // e.g. http://localhost:3000
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   },
 });
@@ -88,11 +87,11 @@ io.on("connection", (socket) => {
   });
     socket.on("joinRole", (role) => {
   socket.join(role);
-  console.log("Joined role room:", role);
+  // console.log("Joined role room:", role);
 });
    socket.on("joinAll", () => {
     socket.join("ALL_USERS");
-    console.log("Joined ALL_USERS room");
+    // console.log("Joined ALL_USERS room");
   });
   socket.on("disconnect", () => {
     // console.log("❌ User disconnected");

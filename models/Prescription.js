@@ -38,8 +38,8 @@ const prescriptionSchema = new mongoose.Schema(
          // ✅ NEW: Status of each medicine (optional level)
         mStatus: {
           type: String,
-          enum: ["active", "completed"],
-          default: "active",
+          enum: ["Active", "Completed"],
+          default: "Active",
         },
       },
     ],
@@ -47,8 +47,8 @@ const prescriptionSchema = new mongoose.Schema(
      // ✅ Prescription level status (recommended)
     pStatus: {
       type: String,
-      enum: ["active", "completed"],
-      default: "active",
+      enum: ["Active", "Completed"],
+      default: "Active",
     },
     notes: String,
   },

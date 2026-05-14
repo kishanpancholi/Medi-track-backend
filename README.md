@@ -5,6 +5,7 @@
 3. MedicalRecordController.js-done
 4. adminController.js-done
 5. chatbotController.js-done
-6. doctorcontroller.js-done
+6. doctor.js - Done
 7. patientController.js-done
 8. reviewController.js-done
+9. 

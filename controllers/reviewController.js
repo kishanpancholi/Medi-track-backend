@@ -26,11 +26,16 @@ export const addReview = async (req, res) => {
         }
       }
     ]);
-    
+
+    const avgRatingRaw = stats[0]?.avgRating || 0;
+
+    // round to 1 decimal
+    const avgRatingRounded = Math.round(avgRatingRaw * 10) / 10;
+
     await Doctor.findByIdAndUpdate(
       doctorId,
       {
-        averageRating: stats[0]?.avgRating || 0,
+        averageRating: avgRatingRounded,
         totalReviews: stats[0]?.totalReviews || 0
       },
       { new: true, runValidators: true }

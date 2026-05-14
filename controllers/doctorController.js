@@ -2,7 +2,11 @@ import Doctor from "../models/Doctor.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Appointment from "../models/Appointment.js";
-import { sendOtpService, verifyOtpService, resetPasswordService } from "../utils/forgotPassword.js";
+import {
+  sendOtpService,
+  verifyOtpService,
+  resetPasswordService,
+} from "../utils/forgotPassword.js";
 import { sendNotification } from "../utils/sendNotification.js";
 
 export const registerDoctor = async (req, res) => {
@@ -16,6 +20,8 @@ export const registerDoctor = async (req, res) => {
       mobile,
       experience,
       licenseNumber,
+      gender,
+      dob,
     } = req.body;
     const exists = await Doctor.findOne({ email });
     if (exists) {
@@ -35,20 +41,22 @@ export const registerDoctor = async (req, res) => {
       mobile,
       experience,
       licenseNumber,
+      gender,
+      dob,
     });
-await sendNotification({
-  title: "New Doctor Registered",
-  message: `${fullName} has registered as a doctor.`,
-  role: "Admin",
-  type: "doctor_registered",
-});
+    await sendNotification({
+      title: "New Doctor Registered",
+      message: `${fullName} has registered as a doctor.`,
+      role: "Admin",
+      type: "doctor_registered",
+    });
     res.status(201).json({ msg: "Doctor registered successfully!", doctor });
   } catch (error) {
     res.status(500).json({ msg: "Server error", error: error.message });
   }
 };
 
-//Doctor login 
+//Doctor login
 export const loginDoctor = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -74,7 +82,7 @@ export const loginDoctor = async (req, res) => {
     //STORE TOKEN IN COOKIE
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // true in production (HTTPS)
+      secure: true,
       path: "/",
       sameSite: "None",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
@@ -96,7 +104,7 @@ export const loginDoctor = async (req, res) => {
         fullName: doc.fullName,
         email: doc.email,
         isProfileComplete: doc.isProfileComplete,
-      }
+      },
     });
   } catch (err) {
     res.status(500).json({ message: "Server Error" });
@@ -120,7 +128,6 @@ export const getDoctorNames = async (req, res) => {
 
 export const completeDoctorProfile = async (req, res) => {
   try {
-
     // check auth
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -173,19 +180,19 @@ export const completeDoctorProfile = async (req, res) => {
       },
       {
         new: true, // returns updated document not old one
-        runValidators: true // it make sure that schema validations are applied during update
-      }
+        runValidators: true, // it make sure that schema validations are applied during update
+      },
     );
 
     if (!updatedDoctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-await sendNotification({
-  title: "Doctor Profile Completed",
-  message: `${updatedDoctor.fullName} completed their profile.`,
-  role: "Admin",
-  type: "doctor_profile_completed",
-});
+    await sendNotification({
+      title: "Doctor Profile Completed",
+      message: `${updatedDoctor.fullName} completed their profile.`,
+      role: "Admin",
+      type: "doctor_profile_completed",
+    });
     res.status(200).json({
       success: true,
       message: "Profile completed successfully",
@@ -203,16 +210,12 @@ export const getAllDoctor = async (req, res) => {
     const doctors = await Doctor.find().sort({ createdAt: -1 });
 
     // Dynamic Specializations
-     const specializations = [
-      ...new Set(
-        doctors
-          .map((doc) => doc.specialization)
-          .filter(Boolean)
-      ),
+    const specializations = [
+      ...new Set(doctors.map((doc) => doc.specialization).filter(Boolean)),
     ];
 
     // Experience Dropdown
-     const experienceRanges = [
+    const experienceRanges = [
       {
         label: "0 - 5 Years",
         value: "0-5",
@@ -228,12 +231,8 @@ export const getAllDoctor = async (req, res) => {
     ];
 
     // Status Dropdown
-     const statuses = [
-      ...new Set(
-        doctors
-          .map((doc) => doc.status)
-          .filter(Boolean)
-      ),
+    const statuses = [
+      ...new Set(doctors.map((doc) => doc.status).filter(Boolean)),
     ];
 
     // Send response
@@ -248,7 +247,6 @@ export const getAllDoctor = async (req, res) => {
         statuses,
       },
     });
-
   } catch (error) {
     console.error("Error fetching doctors:", error);
 
@@ -272,23 +270,22 @@ export const updateDoctorStatus = async (req, res) => {
     const doctor = await Doctor.findByIdAndUpdate(
       doctorId,
       { status },
-      { new: true }
+      { new: true },
     );
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-await sendNotification({
-  title: `Doctor ${status}`,
-  message: `Dr. ${doctor.fullName} has been ${status}.`,
-  role: "Admin",
-  type: "doctor_status_updated",
-});
+    await sendNotification({
+      title: `Doctor ${status}`,
+      message: `Dr. ${doctor.fullName} has been ${status}.`,
+      role: "Admin",
+      type: "doctor_status_updated",
+    });
     res.status(200).json({
       message: `Doctor ${status} successfully`,
       doctor,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -298,7 +295,7 @@ const cookieOptions = {
   httpOnly: true,
   secure: true,
   sameSite: "None",
-  path: "/", // VERY IMPORTANT
+  path: "/",
 };
 
 //show male & female chart in doctor dashboard
@@ -332,7 +329,6 @@ export const getGender = async (req, res) => {
     });
 
     res.status(200).json({ male, female });
-
   } catch (error) {
     console.log("Gender API Error:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
@@ -356,7 +352,6 @@ export const getDoctorProfileFull = async (req, res) => {
       success: true,
       user: doctor,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -400,23 +395,16 @@ export const logoutDoctor = (req, res) => {
   res.status(200).json({ message: "Logout successful" });
 };
 
-// 
 export const getFilteredDoctors = async (req, res) => {
   try {
-    const {
-      specialization,
-      serviceType,
-      experience,
-      rating,
-      availability
-    } = req.query;
+    const { specialization, serviceType, experience, rating, availability } =
+      req.query;
 
     let query = {
       status: "approved",
       isProfileComplete: true,
     };
 
-    // Specialization
     if (specialization) {
       query.specialization = {
         $regex: specialization,
@@ -424,14 +412,12 @@ export const getFilteredDoctors = async (req, res) => {
       };
     }
 
-    // Service Type
     if (serviceType) {
       query.serviceType = {
         $regex: new RegExp(`^${serviceType}$`, "i"),
       };
     }
 
-    // Experience (NUMBER BASED)
     if (experience) {
       if (experience === "0-5") {
         query.experience = { $gte: 0, $lte: 5 };
@@ -442,7 +428,6 @@ export const getFilteredDoctors = async (req, res) => {
       }
     }
 
-    // Availability (FIXED FIELD)
     if (availability) {
       query.workingDays = {
         $elemMatch: {
@@ -451,7 +436,6 @@ export const getFilteredDoctors = async (req, res) => {
       };
     }
 
-    // Rating (only if exists in schema)
     if (rating) {
       query.averageRating = { $gte: Number(rating) };
     }
@@ -459,7 +443,6 @@ export const getFilteredDoctors = async (req, res) => {
     let doctors = await Doctor.find(query);
 
     res.status(200).json(doctors);
-
   } catch (error) {
     console.error("Filter error:", error);
     res.status(500).json({ message: "Server Error" });
@@ -471,24 +454,21 @@ export const getFilterOptions = async (req, res) => {
   try {
     const doctors = await Doctor.find({
       status: "approved",
-      isProfileComplete: true
+      isProfileComplete: true,
     });
 
-    // Extract unique values
-    const specializations = [...new Set(doctors.map(d => d.specialization))];
-    const serviceTypes = [...new Set(doctors.map(d => d.serviceType))];
+    const specializations = [...new Set(doctors.map((d) => d.specialization))];
+    const serviceTypes = [...new Set(doctors.map((d) => d.serviceType))];
 
-    // Optional (if you store workingDays)
-    const availability = [...new Set(
-      doctors.flatMap(d => d.workingDays || [])
-    )];
+    const availability = [
+      ...new Set(doctors.flatMap((d) => d.workingDays || [])),
+    ];
 
     res.status(200).json({
       specializations,
       serviceTypes,
-      availability
+      availability,
     });
-
   } catch (err) {
     res.status(500).json({ message: "Failed to load filters" });
   }

@@ -1,14 +1,26 @@
 import Patient from "../models/Patient.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { sendOtpService, verifyOtpService, resetPasswordService } from "../utils/forgotPassword.js";
+import {
+  sendOtpService,
+  verifyOtpService,
+  resetPasswordService,
+} from "../utils/forgotPassword.js";
 import { sendNotification } from "../utils/sendNotification.js";
 import { notificationMessages } from "../utils/notificationMessages.js";
 
 export const registerPatient = async (req, res) => {
   try {
-    const { firstName, lastName, gender, dob, mobile, email, address, password } =
-      req.body;
+    const {
+      firstName,
+      lastName,
+      gender,
+      dob,
+      mobile,
+      email,
+      address,
+      password,
+    } = req.body;
 
     const exists = await Patient.findOne({ email });
     if (exists) {
@@ -33,11 +45,10 @@ export const registerPatient = async (req, res) => {
     await sendNotification({
       title: "New Patient Registered",
       message: `${firstName} ${lastName} has registered.`,
-      role: "Admin", // 👈 VERY IMPORTANT
-      type: "patient_registered", 
+      role: "Admin", 
+      type: "patient_registered",
     });
     res.status(201).json({ msg: "Patient Registered Successfully!", patient });
-
   } catch (error) {
     res.status(400).json({ msg: error.message });
   }
@@ -58,11 +69,11 @@ export const loginPatient = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Incorrect Password" });
     }
-    
+
     // After login we create token:
     const token = jwt.sign(
       { id: user._id, role: "patient" },
-      process.env.JWT_SECRET,//JWT secrat key and Digitally sign the token
+      process.env.JWT_SECRET, //JWT secrat key and Digitally sign the token
       { expiresIn: "1d" },
     );
 
@@ -71,20 +82,15 @@ export const loginPatient = async (req, res) => {
       secure: true,
       sameSite: "None",
       path: "/",
-      maxAge: 24 * 60 * 60 * 1000,// cookie valid for the 1 day
-    })
-    
-    // .status(200).json({
-    //   message: "Login Successful",
-    //   token,
-    //   user,
-    // });
+      maxAge: 24 * 60 * 60 * 1000, // cookie valid for the 1 day
+    });
+
     res.status(200).json({
       message: "Login Successful",
       token,
       user: {
         ...user._doc,
-        role: "Patient", // 🔥 ADD THIS LINE
+        role: "Patient", 
       },
     });
   } catch (err) {
@@ -142,19 +148,19 @@ export const completePatientProfile = async (req, res) => {
       },
       {
         new: true, // returns updated document not old one
-        runValidators: true // it make sure that schema validations are applied during update
-      }
+        runValidators: true, // it make sure that schema validations are applied during update
+      },
     ).select("-password");
     await sendNotification({
-  title: "Profile Completed",
-  message: `${existingPatient.firstName} completed their profile.`,
-  role: "Admin",
-  type: "patient_profile_completed",
-});
+      title: "Profile Completed",
+      message: `${existingPatient.firstName} completed their profile.`,
+      role: "Admin",
+      type: "patient_profile_completed",
+    });
     if (!updatedPatient) {
       return res.status(404).json({ message: "Patient not found" });
     }
-  
+
     res.status(200).json({
       message: "Profile completed successfully",
       patient: updatedPatient,
@@ -185,20 +191,39 @@ export const getPatients = async (req, res) => {
       // Full Name
       name: `${p.firstName} ${p.lastName}`,
 
+      // Personal Info
+      firstName: p.firstName,
+      lastName: p.lastName,
+      gender: p.gender,
+      dob: p.dob,
+
       // Calculate Age
       age: calculateAge(p.dob),
 
-      // Other Fields
-      gender: p.gender,
+      // Contact
       phone: p.mobile,
       email: p.email,
+
+      // Address
       address: p.address,
       city: p.city,
+      state: p.state,
+      pincode: p.pincode,
+
+      // Medical
+      bloodGroup: p.bloodGroup,
+      weight: p.weight,
+      diseases: p.diseases,
+      allergies: p.allergies,
+      medications: p.medications,
+
+      // Emergency
+      emergencyContact: p.emergencyContact,
+
       createdAt: p.createdAt,
     }));
 
     res.json(formattedPatients);
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -208,7 +233,7 @@ const cookieOptions = {
   httpOnly: true,
   secure: true,
   sameSite: "None",
-  path: "/", // VERY IMPORTANT
+  path: "/", 
 };
 
 export const getPatientProfile = async (req, res) => {
@@ -230,17 +255,16 @@ export const getPatientProfile = async (req, res) => {
 
 export const updatePatientProfile = async (req, res) => {
   try {
-    const updated = await Patient.findByIdAndUpdate(
-      req.user.id,
-      req.body,
-      { new: true, runValidators: true }
-    ).select("-password");
+    const updated = await Patient.findByIdAndUpdate(req.user.id, req.body, {
+      new: true,
+      runValidators: true,
+    }).select("-password");
     await sendNotification({
-  title: "Profile Updated",
-  message: `Patient ${updated.firstName} updated profile details.`,
-  role: "Admin",
-  type: "patient_profile_updated",
-});
+      title: "Profile Updated",
+      message: `Patient ${updated.firstName} updated profile details.`,
+      role: "Admin",
+      type: "patient_profile_updated",
+    });
     res.json({ patient: updated });
   } catch (err) {
     res.status(500).json({ message: err.message });

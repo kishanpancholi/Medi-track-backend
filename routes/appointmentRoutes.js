@@ -13,7 +13,12 @@ import { createAppointment,
         getBookedSlots,
         getAppointmentRequests,
         getMyDoctors,
-        getNextPatient} from "../controllers/appointmentController.js";
+        getNextPatient,
+        getAppointmentOverview,
+        getAppointmentStatusStats,
+        getDoctorPerformance,
+        getPatientBehavior,
+        getSystemGrowth} from "../controllers/appointmentController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
 
@@ -34,4 +39,9 @@ router.put("/:appointmentId/reschedule", protect, authorize("patient"), reschedu
 router.get("/dashboard", protect, getDoctorDashboard); // to get count on doctor side
 router.get("/mydoctors", protect, getMyDoctors);
 router.get("/next", protect, getNextPatient); // get next patient on doctor dashboard 
+router.get("/overview", protect,getAppointmentOverview); // admin side appointment overview chart data
+router.get("/status-stats", protect, getAppointmentStatusStats); // admin side appointment status pie chart data
+router.get("/performance", protect, getDoctorPerformance); // admin side doctor performance analysis
+router.get("/behavior", protect, getPatientBehavior); // admin side patient behavior analysis
+router.get("/growth", protect, getSystemGrowth); // admin side system growth metrics
 export default router;

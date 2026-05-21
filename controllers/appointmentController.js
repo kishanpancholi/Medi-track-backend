@@ -1,5 +1,6 @@
 import Appointment from "../models/Appointment.js";
 import Doctor from "../models/Doctor.js";
+import Patient from "../models/Patient.js";
 import { sendNotification } from "../utils/sendNotification.js";
 import { notificationMessages } from "../utils/notificationMessages.js";
 
@@ -695,40 +696,6 @@ export const getBookedSlots = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-// display doctors on patient side who have appointments with patient in past or future (dropdown in upload record)
-// export const getMyDoctors = async (req, res) => {
-//   try {
-//     if (!req.user) {
-//       return res.status(401).json({ message: "Unauthorized" });
-//     }
-
-//     // ✅ correct field = patient
-//     const appointments = await Appointment.find({
-//       patient: req.user.id
-//     });
-
-//     // extract doctor IDs correctly
-//     const doctorIds = [
-//       ...new Set(
-//         appointments
-//           .map(a => a.doctor)
-//           .filter(Boolean)
-//           .map(id => id.toString())
-//       )
-//     ];
-
-//     const doctors = await Doctor.find({
-//       _id: { $in: doctorIds }
-//     }).select("fullName specialization");
-
-//     res.json(doctors);
-
-//   } catch (err) {
-//     console.error("ERROR:", err);
-//     res.status(500).json({ message: err.message });
-//   }
-// };
 export const getMyDoctors = async (req, res) => {
   try {
     if (!req.user) {
@@ -885,5 +852,381 @@ export const getNextPatient = async (req, res) => {
     res.status(500).json({
       message: "Server Error"
     });
+  }
+};
+// admin side appointment overview (chart data)
+export const getAppointmentOverview = async (req, res) => {
+  try {
+    const { type = "daily" } = req.query;
+
+    let groupId;
+
+    if (type === "daily") {
+      groupId = {
+        $dateToString: {
+          format: "%Y-%m-%d",
+          date: "$date",
+          timezone: "Asia/Kolkata"
+        }
+      };
+    }
+
+    else if (type === "monthly") {
+      groupId = {
+        $dateToString: {
+          format: "%Y-%m",
+          date: "$date",
+          timezone: "Asia/Kolkata"
+        }
+      };
+    }
+
+    else if (type === "yearly") {
+      groupId = {
+        $dateToString: {
+          format: "%Y",
+          date: "$date",
+          timezone: "Asia/Kolkata"
+        }
+      };
+    }
+
+    else if (type === "weekly") {
+      groupId = {
+        year: { $isoWeekYear: "$date" },
+        week: { $isoWeek: "$date" }
+      };
+    }
+
+    const data = await Appointment.aggregate([
+      {
+        $group: {
+          _id: groupId,
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const formatted = data.map(item => {
+      if (type === "weekly") {
+        return {
+          label: `Week ${item._id.week}, ${item._id.year}`,
+          count: item.count
+        };
+      }
+
+      return {
+        label: item._id,
+        count: item.count
+      };
+    });
+
+    res.status(200).json(formatted);
+
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching overview" });
+  }
+};
+//admin side appointment status (pie chart data)
+// 📊 APPOINTMENT STATUS ANALYSIS
+export const getAppointmentStatusStats = async (req, res) => {
+  try {
+    const data = await Appointment.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // format response
+    const formatted = data.map(item => ({
+      status: item._id,
+      count: item.count
+    }));
+
+    res.status(200).json(formatted);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching status stats" });
+  }
+};
+export const getDoctorPerformance = async (req, res) => {
+  try {
+    const data = await Appointment.aggregate([
+      {
+        $group: {
+          _id: "$doctor",
+          totalAppointments: { $sum: 1 },
+
+          completed: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "completed"] }, 1, 0],
+            },
+          },
+
+          rejected: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "rejected"] }, 1, 0],
+            },
+          },
+        },
+      },
+
+      {
+        $lookup: {
+          from: "doctors",
+          localField: "_id",
+          foreignField: "_id",
+          as: "doctorInfo",
+        },
+      },
+
+      { $unwind: "$doctorInfo" },
+
+      {
+        $project: {
+          doctorId: "$_id",
+
+          // ✅ CORRECT FIELD MAPPING
+          name: "$doctorInfo.fullName",
+          specialization: "$doctorInfo.specialization",
+          experience: "$doctorInfo.experience",
+
+          rating: "$doctorInfo.averageRating",
+          totalReviews: "$doctorInfo.totalReviews",
+
+          totalAppointments: 1,
+          completed: 1,
+          rejected: 1,
+        },
+      },
+    ]);
+
+    // ✅ CALCULATE METRICS
+    const doctorsWithScore = data.map((doc) => {
+      const rating = doc.rating || 0;
+
+      const successRate =
+        doc.totalAppointments > 0
+          ? (doc.completed / doc.totalAppointments) * 100
+          : 0;
+
+      // ✅ BALANCED SCORE FORMULA
+      const score =
+        doc.completed * 10 +
+        doc.totalAppointments * 2 +
+        rating * 15 -
+        doc.rejected * 5;
+
+      return {
+        ...doc,
+        successRate: Math.round(successRate),
+        score: Math.max(0, Math.round(score)), // prevent negative
+      };
+    });
+
+    // ✅ SORT BY SCORE (BEST FIRST)
+    doctorsWithScore.sort((a, b) => b.score - a.score);
+
+    // ✅ TOP PERFORMER (SAFE)
+    const topDoctor =
+      doctorsWithScore.length > 0 ? doctorsWithScore[0] : null;
+
+    // ✅ MOST ACTIVE DOCTOR
+    const mostActiveDoctor =
+      doctorsWithScore.length > 0
+        ? doctorsWithScore.reduce((max, curr) =>
+            curr.totalAppointments > max.totalAppointments ? curr : max
+          )
+        : null;
+
+    // ✅ LOW PERFORMERS (OPTIONAL BONUS)
+    const lowPerformers = doctorsWithScore.filter(
+      (doc) => doc.score < 20 && doc.totalAppointments > 0
+    );
+
+    res.status(200).json({
+      success: true,
+      count: doctorsWithScore.length,
+
+      doctors: doctorsWithScore,
+      topDoctor,
+      mostActiveDoctor,
+      lowPerformers,
+    });
+  } catch (error) {
+    console.error("Doctor Performance Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching doctor performance",
+    });
+  }
+};
+  export const getPatientBehavior = async (req, res) => {
+    try {
+      const appointments = await Appointment.find();
+
+      if (!appointments.length) {
+        return res.json(null);
+      }
+
+      // =========================
+      // 📊 1. PEAK TIME
+      // =========================
+      const timeBuckets = {
+        Morning: 0,   // 6–12
+        Afternoon: 0, // 12–5
+        Evening: 0,   // 5–10
+        Night: 0      // 10–6
+      };
+
+      appointments.forEach(app => {
+        const hour = new Date(app.createdAt).getHours();
+
+        if (hour >= 6 && hour < 12) timeBuckets.Morning++;
+        else if (hour >= 12 && hour < 17) timeBuckets.Afternoon++;
+        else if (hour >= 17 && hour < 22) timeBuckets.Evening++;
+        else timeBuckets.Night++;
+      });
+
+      const peakTime = Object.keys(timeBuckets).reduce((a, b) =>
+        timeBuckets[a] > timeBuckets[b] ? a : b
+      );
+
+      // =========================
+      // 🔁 2. REPEAT vs NEW
+      // =========================
+      const patientMap = {};
+
+      appointments.forEach(app => {
+        const id = app.patient?.toString();
+        patientMap[id] = (patientMap[id] || 0) + 1;
+      });
+
+      let repeatPatients = 0;
+      let newPatients = 0;
+
+      Object.values(patientMap).forEach(count => {
+        if (count > 1) repeatPatients++;
+        else newPatients++;
+      });
+
+      // =========================
+      // ❌ 3. CANCELLATION RATE
+      // =========================
+      const totalAppointments = appointments.length;
+
+      const cancelledCount = appointments.filter(app =>
+        app.status === "Cancelled"
+      ).length;
+
+      const cancellationRate = totalAppointments
+  ? Math.round((cancelledCount / totalAppointments) * 100)
+  : 0;
+
+      // =========================
+      // 📅 4. MOST ACTIVE DAY
+      // =========================
+      const dayMap = {
+        Sunday: 0,
+        Monday: 0,
+        Tuesday: 0,
+        Wednesday: 0,
+        Thursday: 0,
+        Friday: 0,
+        Saturday: 0
+      };
+
+      appointments.forEach(app => {
+  if (!app.patient) return;
+
+  const id = app.patient.toString();
+
+  patientMap[id] = (patientMap[id] || 0) + 1;
+});
+
+      const mostActiveDay = Object.keys(dayMap).reduce((a, b) =>
+        dayMap[a] > dayMap[b] ? a : b
+      );
+
+      // =========================
+      // ✅ FINAL RESPONSE
+      // =========================
+      res.json({
+        peakTime,
+        repeatPatients,
+        newPatients,
+        cancellationRate,
+        mostActiveDay
+      });
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server Error" });
+    }
+  };
+export const getSystemGrowth = async (req, res) => {
+  try {
+
+    // 📊 DAILY GROWTH (same as before)
+    const patients = await Patient.aggregate([
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+          },
+          patients: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const doctors = await Doctor.aggregate([
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+          },
+          doctors: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // ✅ NEW: APPROVED & REJECTED COUNT
+    const approvedDoctors = await Doctor.countDocuments({ status: "approved" });
+    const rejectedDoctors = await Doctor.countDocuments({ status: "rejected" });
+
+    // 🔄 MERGE DAILY DATA
+    const map = {};
+
+    patients.forEach(p => {
+      map[p._id] = { date: p._id, patients: p.patients, doctors: 0 };
+    });
+
+    doctors.forEach(d => {
+      if (!map[d._id]) {
+        map[d._id] = { date: d._id, patients: 0, doctors: d.doctors };
+      } else {
+        map[d._id].doctors = d.doctors;
+      }
+    });
+
+    const result = Object.values(map).sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+
+    // ✅ FINAL RESPONSE
+    res.json({
+      growth: result,
+      approvedDoctors,
+      rejectedDoctors
+    });
+
+  } catch (error) {
+    console.error("Growth API Error:", error);
+    res.status(500).json({ message: "Error", error: error.message });
   }
 };

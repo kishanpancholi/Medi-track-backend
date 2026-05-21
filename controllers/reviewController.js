@@ -1,6 +1,7 @@
 import Review from "../models/Review.js";
 import Doctor from "../models/Doctor.js";
 import Patient from "../models/Patient.js";
+import Appointment from "../models/Appointment.js";
 import { notificationMessages } from "../utils/notificationMessages.js";
 import { sendNotification } from "../utils/sendNotification.js";
 import mongoose from "mongoose";
@@ -161,5 +162,53 @@ export const getAllReviews = async (req, res) => {
   } catch (error) {
     console.log("REVIEW API ERROR:", error);
     res.status(500).json({ message: error.message });
+  }
+};
+export const submitReview = async (req, res) => {
+  try {
+    const { appointmentId, rating, comment } = req.body;
+
+    const appointment = await Appointment.findById(appointmentId)
+      .populate("doctor");
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // ✅ create review in Review collection
+    await Review.create({
+      doctor: appointment.doctor._id,
+      patient: req.user.id,
+      rating,
+      comment,
+    });
+
+    // ✅ mark as handled
+    appointment.reviewHandled = true;
+    await appointment.save();
+
+    res.json({ message: "Review submitted successfully" });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}; 
+export const skipReview = async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    appointment.reviewHandled = true;
+
+    await appointment.save();
+
+    res.json({ message: "Review skipped" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };

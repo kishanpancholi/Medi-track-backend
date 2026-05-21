@@ -32,7 +32,11 @@ const appointmentSchema = new mongoose.Schema({
   meetingLink: {
     type: String,
     default: null,
-  }
+  },
+  reviewHandled: {
+  type: Boolean,
+  default: false
+}
 }, { timestamps: true });
 
 export default mongoose.model("Appointment", appointmentSchema);

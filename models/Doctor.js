@@ -42,7 +42,7 @@ const doctorSchema = new mongoose.Schema(
     emergencyContact: { type: String },
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
+      enum: ["pending", "approved", "rejected", "suspended"],
       default: "pending",
     },
     serviceType: {
@@ -59,6 +59,14 @@ const doctorSchema = new mongoose.Schema(
     totalReviews: {
       type: Number,
       default: 0,
+    },
+    suspensionReason: {
+      type: String,
+      default: "",
+    },
+
+    suspendedAt: {
+      type: Date,
     },
     isProfileComplete: { type: Boolean, default: false },
   },

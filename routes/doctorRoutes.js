@@ -11,7 +11,7 @@ import {
   getDoctorProfileFull,
   sendOtpDoctor,
   verifyOtpDoctor,
-  resetPasswordDoctor,getFilteredDoctors,getFilterOptions
+  resetPasswordDoctor,getFilteredDoctors,getFilterOptions,suspendDoctor,activateDoctor
 } from "../controllers/doctorController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
@@ -35,7 +35,8 @@ router.get("/gender", protect, getGender);
 router.get("/profile-full", protect, authorize("doctor"), getDoctorProfileFull); // api for update doctor profile
 router.get("/filtered", getFilteredDoctors); // get filtered doctors on patient home page
 router.get("/filters", getFilterOptions);
-
+router.put("/suspend",suspendDoctor);
+router.put("/unsuspend",activateDoctor);
 router.get("/profile", protect, authorize("doctor"), (req, res) => {
   res.status(200).json({
     message: "Doctor Authorized",

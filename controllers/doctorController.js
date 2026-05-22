@@ -1,4 +1,5 @@
 import Doctor from "../models/Doctor.js";
+import Patient from "../models/Patient.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Appointment from "../models/Appointment.js";
@@ -473,3 +474,159 @@ export const getFilterOptions = async (req, res) => {
     res.status(500).json({ message: "Failed to load filters" });
   }
 };
+// export const suspendDoctor = async (req, res) => {
+//   try {
+//     const { doctorId, reason } = req.body;
+
+//     const doctor = await Doctor.findByIdAndUpdate(
+//       doctorId,
+//       {
+//         status: "suspended",
+//         suspensionReason: reason || "Not specified",
+//       },
+//       { new: true }
+//     );
+
+//     res.json({
+//       success: true,
+//       message: "Doctor suspended",
+//       doctor,
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+
+export const suspendDoctor = async (req, res) => {
+  try {
+    const { doctorId, reason } = req.body;
+
+    // 1️⃣ Suspend doctor
+    const doctor = await Doctor.findByIdAndUpdate(
+      doctorId,
+      {
+        status: "suspended",
+        suspensionReason: reason || "",
+      },
+      { new: true }
+    );
+
+    // 2️⃣ 🔔 GLOBAL NOTIFICATION TO ALL PATIENTS
+    const allPatients = await Patient.find();
+    for (let patient of allPatients) {
+      await sendNotification({
+        userId: patient._id,
+        role: "Patient",
+        type: "doctor_suspended",
+        title: "Doctor Unavailable",
+        message: `Dr. ${doctor.fullName} has been suspended and is currently not available.`,
+      });
+    }
+
+    // 3️⃣ Find affected appointments
+    const now = new Date();
+
+    const appointments = await Appointment.find({
+      doctor: doctorId,
+      status: { $in: ["pending", "confirmed"] },
+      date: { $gte: now },
+    });
+
+    // 4️⃣ Reject + notify ONLY those patients
+    for (let appt of appointments) {
+      appt.status = "rejected";
+      appt.rejectionReason = "Doctor suspended by admin";
+      await appt.save();
+      // Format Date
+const formattedDate = new Date(appt.date).toDateString();
+const formattedTime = appt.time;
+      await sendNotification({
+        userId: appt.patient,
+        role: "Patient",
+        type: "appointment_rejected",
+        title: "Appointment Cancelled",
+message: `Your appointment with Dr. ${doctor.fullName} on ${formattedDate} at ${formattedTime} has been cancelled because the doctor is suspended.`,      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Doctor suspended + notifications sent",
+    });
+  } 
+  catch (err) {
+  console.error("🔥 Suspend Doctor Error:", err);
+
+  res.status(500).json({
+    success: false,
+    message: err.message, // 👈 THIS WILL SHOW REAL ERROR
+  });
+}
+};
+
+export const activateDoctor = async (req, res) => {
+  try {
+    const { doctorId } = req.body;
+
+    // 1️⃣ Activate doctor
+    const doctor = await Doctor.findByIdAndUpdate(
+      doctorId,
+      {
+        status: "approved",
+        suspensionReason: "",
+      },
+      { new: true }
+    );
+
+    // 2️⃣ 🔔 NOTIFY ALL PATIENTS
+    const allPatients = await Patient.find();
+
+    for (let patient of allPatients) {
+      await sendNotification({
+        userId: patient._id,
+        role: "Patient",
+        type: "doctor_activated", // ⚠️ IMPORTANT (see below)
+        title: "Doctor Available",
+        message: `Dr. ${doctor.fullName} is now active and available Book Your appointments.`,
+      });
+    }
+
+    // 3️⃣ RESPONSE
+    res.json({
+      success: true,
+      message: "Doctor activated + notifications sent",
+      doctor,
+    });
+
+  } catch (err) {
+    console.error("🔥 Activate Doctor Error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// export const activateDoctor = async (req, res) => {
+//   try {
+//     const { doctorId } = req.body;
+
+//     const doctor = await Doctor.findByIdAndUpdate(
+//       doctorId,
+//       {
+//         status: "approved",
+//         suspensionReason: "",
+//       },
+//       { new: true }
+//     );
+
+//     res.json({
+//       success: true,
+//       message: "Doctor activated",
+//       doctor,
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };

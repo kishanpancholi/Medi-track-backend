@@ -42,17 +42,17 @@ const autoRejectPastAppointments = async (appointments) => {
       );
       const doctorData = await Doctor.findById(appt.doctor);
 
-const { title, message } =
-  notificationMessages.appointment_rejected(doctorData.fullName);
+      const { title, message } =
+        notificationMessages.appointment_rejected(doctorData.fullName);
 
-await sendNotification({
-  userId: appt.patient,
-  role: "Patient",
-  type: "appointment_rejected",
-  title,
-  message,
-  link: "/PatientAppointment",
-});
+      await sendNotification({
+        userId: appt.patient,
+        role: "Patient",
+        type: "appointment_rejected",
+        title,
+        message,
+        link: "/PatientAppointment",
+      });
     }
   }
 };
@@ -106,33 +106,33 @@ export const createAppointment = async (req, res) => {
     }
     const doctorData = await Doctor.findById(appointment.doctor);
 
-// 🔹 Patient notification
-const { title: patientTitle, message: patientMessage } =
-  notificationMessages.appointment_booked(doctorData.fullName);
+    // 🔹 Patient notification
+    const { title: patientTitle, message: patientMessage } =
+      notificationMessages.appointment_booked(doctorData.fullName);
 
-await sendNotification({
-  userId: appointment.patient,      
-  role: "Patient",                  
-  type: "appointment_booked",
-  title: patientTitle,
-  message: patientMessage,
-  link: "/PatientAppointment",
-});
+    await sendNotification({
+      userId: appointment.patient,
+      role: "Patient",
+      type: "appointment_booked",
+      title: patientTitle,
+      message: patientMessage,
+      link: "/PatientAppointment",
+    });
 
-// 🔹 Doctor notification
-const patientName = req.user.firstName || "Patient";
+    // 🔹 Doctor notification
+    const patientName = req.user.firstName || "Patient";
 
-const { title: doctorTitle, message: doctorMessage } =
-  notificationMessages.appointment_request(patientName);
+    const { title: doctorTitle, message: doctorMessage } =
+      notificationMessages.appointment_request(patientName);
 
-await sendNotification({
-  userId: appointment.doctor,
-  role: "Doctor",                   // ✅ FIXED
-  type: "appointment_request",
-  title: doctorTitle,
-  message: doctorMessage,
-  link: "/AppointmentView",
-});
+    await sendNotification({
+      userId: appointment.doctor,
+      role: "Doctor",                   // ✅ FIXED
+      type: "appointment_request",
+      title: doctorTitle,
+      message: doctorMessage,
+      link: "/AppointmentView",
+    });
 
     res.status(201).json({
       message: "Appointment booked successfully",
@@ -325,12 +325,12 @@ export const updateAppointmentStatus = async (req, res) => {
 
       // AUTO REJECT OTHERS
       const rejectedAppointments = await Appointment.find({
-  doctor: appointment.doctor,
-  time: appointment.time,
-  date: appointment.date,
-  status: "pending",
-  _id: { $ne: appointment._id },
-});
+        doctor: appointment.doctor,
+        time: appointment.time,
+        date: appointment.date,
+        status: "pending",
+        _id: { $ne: appointment._id },
+      });
       await Appointment.updateMany(
         {
           doctor: appointment.doctor,
@@ -341,21 +341,21 @@ export const updateAppointmentStatus = async (req, res) => {
         },
         { status: "rejected" }
       );
-for (const appt of rejectedAppointments) {
-  const doctorData = await Doctor.findById(appt.doctor);
+      for (const appt of rejectedAppointments) {
+        const doctorData = await Doctor.findById(appt.doctor);
 
-  const { title, message } =
-    notificationMessages.appointment_rejected(doctorData.fullName);
+        const { title, message } =
+          notificationMessages.appointment_rejected(doctorData.fullName);
 
-  await sendNotification({
-    userId: appt.patient,
-    role: "Patient",
-    type: "appointment_rejected",
-    title,
-    message,
-    link: "/PatientAppointment",
-  });
-}
+        await sendNotification({
+          userId: appt.patient,
+          role: "Patient",
+          type: "appointment_rejected",
+          title,
+          message,
+          link: "/PatientAppointment",
+        });
+      }
     } else {
       appointment.status = status;
       await appointment.save();
@@ -459,20 +459,19 @@ export const rescheduleAppointment = async (req, res) => {
         message: "Date and time are required",
       });
     }
-
-    // const newDate = new Date(date);
-    // newDate.setHours(0, 0, 0, 0);
-
-    // const newDate = new Date(`${date}T12:00:00`);
-    // const newDate = new Date(date);
-    //   newDate.setHours(0, 0, 0, 0);
     const newDate = new Date(`${date}T12:00:00`);
-    const appointment = await Appointment.findById(appointmentId);
-
+    const appointment = await Appointment.findById(appointmentId).populate("doctor");
     if (!appointment) {
       return res.status(404).json({ message: "Appointment not found" });
     }
-
+    if (
+      appointment.status === "rejected" ||
+      appointment.doctor.status === "suspended"
+    ) {
+      return res.status(400).json({
+        message: "Reschedule not allowed",
+      });
+    }
     // check patient ownership
     if (appointment.patient.toString() !== patientId) {
       return res.status(403).json({ message: "Not authorized" });
@@ -517,18 +516,18 @@ export const rescheduleAppointment = async (req, res) => {
 
     await appointment.save();
     const { title, message } =
-  notificationMessages.appointment_rescheduled(
-    `${date} at ${time}`
-  );
+      notificationMessages.appointment_rescheduled(
+        `${date} at ${time}`
+      );
 
-await sendNotification({
-  userId: appointment.doctor,
-  role: "Doctor",
-  type: "appointment_rescheduled",
-  title,
-  message,
-  link: "/AppointmentView",
-});
+    await sendNotification({
+      userId: appointment.doctor,
+      role: "Doctor",
+      type: "appointment_rescheduled",
+      title,
+      message,
+      link: "/AppointmentView",
+    });
     res.status(200).json({
       message: "Appointment rescheduled successfully",
       appointment,
@@ -1040,8 +1039,8 @@ export const getDoctorPerformance = async (req, res) => {
     const mostActiveDoctor =
       doctorsWithScore.length > 0
         ? doctorsWithScore.reduce((max, curr) =>
-            curr.totalAppointments > max.totalAppointments ? curr : max
-          )
+          curr.totalAppointments > max.totalAppointments ? curr : max
+        )
         : null;
 
     // ✅ LOW PERFORMERS (OPTIONAL BONUS)
@@ -1066,109 +1065,109 @@ export const getDoctorPerformance = async (req, res) => {
     });
   }
 };
-  export const getPatientBehavior = async (req, res) => {
-    try {
-      const appointments = await Appointment.find();
+export const getPatientBehavior = async (req, res) => {
+  try {
+    const appointments = await Appointment.find();
 
-      if (!appointments.length) {
-        return res.json(null);
-      }
-
-      // =========================
-      // 📊 1. PEAK TIME
-      // =========================
-      const timeBuckets = {
-        Morning: 0,   // 6–12
-        Afternoon: 0, // 12–5
-        Evening: 0,   // 5–10
-        Night: 0      // 10–6
-      };
-
-      appointments.forEach(app => {
-        const hour = new Date(app.createdAt).getHours();
-
-        if (hour >= 6 && hour < 12) timeBuckets.Morning++;
-        else if (hour >= 12 && hour < 17) timeBuckets.Afternoon++;
-        else if (hour >= 17 && hour < 22) timeBuckets.Evening++;
-        else timeBuckets.Night++;
-      });
-
-      const peakTime = Object.keys(timeBuckets).reduce((a, b) =>
-        timeBuckets[a] > timeBuckets[b] ? a : b
-      );
-
-      // =========================
-      // 🔁 2. REPEAT vs NEW
-      // =========================
-      const patientMap = {};
-
-      appointments.forEach(app => {
-        const id = app.patient?.toString();
-        patientMap[id] = (patientMap[id] || 0) + 1;
-      });
-
-      let repeatPatients = 0;
-      let newPatients = 0;
-
-      Object.values(patientMap).forEach(count => {
-        if (count > 1) repeatPatients++;
-        else newPatients++;
-      });
-
-      // =========================
-      // ❌ 3. CANCELLATION RATE
-      // =========================
-      const totalAppointments = appointments.length;
-
-      const cancelledCount = appointments.filter(app =>
-        app.status === "Cancelled"
-      ).length;
-
-      const cancellationRate = totalAppointments
-  ? Math.round((cancelledCount / totalAppointments) * 100)
-  : 0;
-
-      // =========================
-      // 📅 4. MOST ACTIVE DAY
-      // =========================
-      const dayMap = {
-        Sunday: 0,
-        Monday: 0,
-        Tuesday: 0,
-        Wednesday: 0,
-        Thursday: 0,
-        Friday: 0,
-        Saturday: 0
-      };
-
-      appointments.forEach(app => {
-  if (!app.patient) return;
-
-  const id = app.patient.toString();
-
-  patientMap[id] = (patientMap[id] || 0) + 1;
-});
-
-      const mostActiveDay = Object.keys(dayMap).reduce((a, b) =>
-        dayMap[a] > dayMap[b] ? a : b
-      );
-
-      // =========================
-      // ✅ FINAL RESPONSE
-      // =========================
-      res.json({
-        peakTime,
-        repeatPatients,
-        newPatients,
-        cancellationRate,
-        mostActiveDay
-      });
-
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server Error" });
+    if (!appointments.length) {
+      return res.json(null);
     }
-  };
+
+    // =========================
+    // 📊 1. PEAK TIME
+    // =========================
+    const timeBuckets = {
+      Morning: 0,   // 6–12
+      Afternoon: 0, // 12–5
+      Evening: 0,   // 5–10
+      Night: 0      // 10–6
+    };
+
+    appointments.forEach(app => {
+      const hour = new Date(app.createdAt).getHours();
+
+      if (hour >= 6 && hour < 12) timeBuckets.Morning++;
+      else if (hour >= 12 && hour < 17) timeBuckets.Afternoon++;
+      else if (hour >= 17 && hour < 22) timeBuckets.Evening++;
+      else timeBuckets.Night++;
+    });
+
+    const peakTime = Object.keys(timeBuckets).reduce((a, b) =>
+      timeBuckets[a] > timeBuckets[b] ? a : b
+    );
+
+    // =========================
+    // 🔁 2. REPEAT vs NEW
+    // =========================
+    const patientMap = {};
+
+    appointments.forEach(app => {
+      const id = app.patient?.toString();
+      patientMap[id] = (patientMap[id] || 0) + 1;
+    });
+
+    let repeatPatients = 0;
+    let newPatients = 0;
+
+    Object.values(patientMap).forEach(count => {
+      if (count > 1) repeatPatients++;
+      else newPatients++;
+    });
+
+    // =========================
+    // ❌ 3. CANCELLATION RATE
+    // =========================
+    const totalAppointments = appointments.length;
+
+    const cancelledCount = appointments.filter(app =>
+      app.status === "Cancelled"
+    ).length;
+
+    const cancellationRate = totalAppointments
+      ? Math.round((cancelledCount / totalAppointments) * 100)
+      : 0;
+
+    // =========================
+    // 📅 4. MOST ACTIVE DAY
+    // =========================
+    const dayMap = {
+      Sunday: 0,
+      Monday: 0,
+      Tuesday: 0,
+      Wednesday: 0,
+      Thursday: 0,
+      Friday: 0,
+      Saturday: 0
+    };
+
+    appointments.forEach(app => {
+      if (!app.patient) return;
+
+      const id = app.patient.toString();
+
+      patientMap[id] = (patientMap[id] || 0) + 1;
+    });
+
+    const mostActiveDay = Object.keys(dayMap).reduce((a, b) =>
+      dayMap[a] > dayMap[b] ? a : b
+    );
+
+    // =========================
+    // ✅ FINAL RESPONSE
+    // =========================
+    res.json({
+      peakTime,
+      repeatPatients,
+      newPatients,
+      cancellationRate,
+      mostActiveDay
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
 export const getSystemGrowth = async (req, res) => {
   try {
 

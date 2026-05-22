@@ -104,5 +104,17 @@ patient_login: (patient) => ({
   title: "Patient Login",
   message: `${patient} just logged in`,
 }),
+appointment_rejected_by_admin: (doctor) => ({
+  title: "Appointment Cancelled",
+  message: `Your appointment with Dr. ${doctor} was cancelled because the doctor has been suspended by admin`,
+}),
+doctor_suspended: (doctor, dateTime) => ({
+  title: "Doctor Suspended",
+  message: `Your appointment with Dr. ${doctor} on ${dateTime} has been cancelled because the doctor is suspended.`,
+}),
+doctor_activated: (doctor) => ({
+  title: "Doctor Available",
+  message: `Dr. ${doctor} is now active and available for appointments.`,
+}),
 
 };

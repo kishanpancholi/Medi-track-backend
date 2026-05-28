@@ -15,6 +15,7 @@ import {
 } from "../controllers/doctorController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { authorize } from "../middleware/authorize.js";
+import checkDoctorActive from "../middleware/checkDoctorActive.js";
 
 const router = express.Router();
 

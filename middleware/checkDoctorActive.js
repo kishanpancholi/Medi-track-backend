@@ -2,9 +2,9 @@ import Doctor from "../models/Doctor.js";
 
 const checkDoctorActive = async (req, res, next) => {
   try {
-    const doctorId = req.doctorId; // from auth middleware
+    const doctorId = req.user.id; // ✅ FIXED
 
-    const doctor = await Doctor.findById(doctorId);
+    const doctor = await Doctor.findById(doctorId); // ✅ direct lookup
 
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });

@@ -21,6 +21,21 @@ const doctorSchema = new mongoose.Schema(
     experience: { type: Number, required: true },
     licenseNumber: { type: String, required: true, unique: true },
 
+    degreeCertificate: {
+      type: String,
+      required: true,
+    },
+
+    licenseCertificate: {
+      type: String,
+      required: true,
+    },
+
+    idProof: {
+      type: String,
+      required: true,
+    },
+
     workingDays: [{ type: String }],
     workingHours: [
       {
@@ -70,6 +85,7 @@ const doctorSchema = new mongoose.Schema(
     },
     isProfileComplete: { type: Boolean, default: false },
   },
+
   { timestamps: true },
 );
 

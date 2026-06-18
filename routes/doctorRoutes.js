@@ -1,4 +1,7 @@
 import express from "express";
+// import { upload } from "../middleware/upload.js";
+import { doctorUpload } from "../middleware/doctorUpload.js";
+
 import {
   registerDoctor,
   loginDoctor,
@@ -19,7 +22,24 @@ import checkDoctorActive from "../middleware/checkDoctorActive.js";
 
 const router = express.Router();
 
-router.post("/register", registerDoctor);
+// router.post("/register", registerDoctor);
+router.post(
+  "/register",
+  (req, res, next) => {
+  doctorUpload.fields([
+      { name: "degreeCertificate", maxCount: 1 },
+      { name: "licenseCertificate", maxCount: 1 },
+      { name: "idProof", maxCount: 1 },
+    ])(req, res, function (err) {
+      if (err) {
+        console.error("UPLOAD ERROR:", err);
+        return res.status(400).json({ msg: err.message });
+      }
+      next();
+    });
+  },
+  registerDoctor
+);
 router.post("/login", loginDoctor);
 router.post("/logout", logoutDoctor);
 router.post("/complete-profile", protect, authorize("doctor"), completeDoctorProfile,); // complete doctor profile

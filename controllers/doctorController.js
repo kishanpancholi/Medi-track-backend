@@ -11,60 +11,9 @@ import {
 } from "../utils/forgotPassword.js";
 import { sendNotification } from "../utils/sendNotification.js";
 
-// export const registerDoctor = async (req, res) => {
-//   try {
-//     const {
-//       fullName,
-//       email,
-//       password,
-//       specialization,
-//       qualification,
-//       mobile,
-//       experience,
-//       licenseNumber,
-//       gender,
-//       dob,
-//     } = req.body;
-//     const exists = await Doctor.findOne({ email });
-//     if (exists) {
-//       return res.status(400).json({ msg: "Email already registered" });
-//     }
-
-//     //hash password
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
-
-//     const doctor = await Doctor.create({
-//       fullName,
-//       email,
-//       password: hashedPassword,
-//       specialization,
-//       qualification,
-//       mobile,
-//       experience,
-//       licenseNumber,
-//       gender,
-//       dob,
-//     });
-//     await sendNotification({
-//       title: "New Doctor Registered",
-//       message: `${fullName} has registered as a doctor.`,
-//       role: "Admin",
-//       type: "doctor_registered",
-//     });
-//     res.status(201).json({ msg: "Doctor registered successfully!", doctor });
-//   } catch (error) {
-//     res.status(500).json({ msg: "Server error", error: error.message });
-//   }
-// };
-
 //Doctor login
 
-
-
 export const registerDoctor = async (req, res) => {
-  console.log("BODY:", req.body);
-  console.log("FILES:", req.files);
   try {
     const {
       fullName,
@@ -79,7 +28,7 @@ export const registerDoctor = async (req, res) => {
       dob,
     } = req.body;
 
-    // ✅ get files
+    // get files
     const degreeFile = req.files?.degreeCertificate?.[0];
     const licenseFile = req.files?.licenseCertificate?.[0];
     const idProofFile = req.files?.idProof?.[0];
@@ -108,7 +57,7 @@ export const registerDoctor = async (req, res) => {
       gender,
       dob,
 
-      // ✅ Cloudinary URLs
+      // Cloudinary URLs
       degreeCertificate: degreeFile.path,
       licenseCertificate: licenseFile.path,
       idProof: idProofFile.path,

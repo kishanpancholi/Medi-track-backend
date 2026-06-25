@@ -102,7 +102,7 @@ export const chatWithAI = async (req, res) => {
     const historyDoc = await ChatHistory.findOne({ patient: patientId });
     const recentMessages = historyDoc?.messages?.slice(-10) || [];
 
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
 
     // ✅ Build chat with history
     const chat = model.startChat({

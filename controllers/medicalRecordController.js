@@ -4,6 +4,7 @@ import { sendNotification } from "../utils/sendNotification.js";
 import { notificationMessages } from "../utils/notificationMessages.js";
 import genAI from "../utils/gemini.js";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
 
 export const createRecord = async (req, res) => {
   try {
@@ -194,103 +195,112 @@ export const getMyRecords = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 export const generateSummary = async (req, res) => {
   try {
     const { recordId } = req.params;
 
+    // ── 1. Find record ──────────────────────────────────────
     const record = await MedicalRecord.findById(recordId);
-
     if (!record) {
-      return res.status(404).json({ message: "Record not found" });
+      return res.status(404).json({ message: "Medical record not found." });
     }
 
-    // ✅ Return cached summary if exists
+    // ── 2. Return cached summary if exists ──────────────────
     if (record.aiSummary?.text) {
       return res.json({ summary: record.aiSummary.text });
     }
 
-    // ✅ 1. Fetch image from Cloudinary
+    // ── 3. Validate file URL ────────────────────────────────
+    if (!record.fileUrl) {
+      return res.status(400).json({ message: "No file attached to this record." });
+    }
+
+    // ── 4. Fetch image from Cloudinary ──────────────────────
     const imageResponse = await axios.get(record.fileUrl, {
       responseType: "arraybuffer",
     });
-
     const base64Image = Buffer.from(imageResponse.data).toString("base64");
 
-    // ✅ 2. Detect MIME type
-    const mimeType = record.fileName.toLowerCase().endsWith(".png")
-      ? "image/png"
-      : "image/jpeg";
+    // ── 5. Detect MIME type safely ──────────────────────────
+    const fileName = (record.fileName || record.fileUrl || "").toLowerCase();
+    let mimeType = "image/jpeg"; // default
+    if (fileName.endsWith(".png"))  mimeType = "image/png";
+    if (fileName.endsWith(".pdf"))  mimeType = "application/pdf";
+    if (fileName.endsWith(".webp")) mimeType = "image/webp";
 
-    // ✅ 3. Call Gemini (NEW SDK)
+    console.log("📄 Processing file:", fileName, "| MIME:", mimeType);
+
+    // ── 6. Generate AI Summary ──────────────────────────────
     const result = await genAI.models.generateContent({
-      model: "gemini-flash-lite-latest",
+      model: "gemini-2.5-flash",
       contents: [
         {
           role: "user",
           parts: [
             {
               inlineData: {
+                mimeType,
                 data: base64Image,
-                mimeType: mimeType,
               },
             },
             {
-              text: `You are a medical assistant AI. Your task is to read a medical report, scan or prescription and generate a clear, simple, and well-structured summary for a non-medical person.
+              text: `
+You are an experienced medical AI assistant helping patients understand their medical reports.
 
-Follow these rules strictly:
+=========================
+CRITICAL FORMATTING RULES
+=========================
 
-1. Use very simple language (avoid complex medical terms, or explain them in brackets).
-2. Keep the summary short, clean, and easy to read.
-3. Format the output in clear sections using headings and bullet points.
-4. Highlight important findings and risks clearly.
-5. Do NOT include unnecessary technical jargon.
-6. Add brief explanations wherever medical terms are used.
-7. End with clear advice on what the patient should do next.
-8. Keep a calm and helpful tone.
+- You MUST use proper Markdown with blank lines between every section.
+- NEVER put two sections on the same line.
+- Each heading must be on its OWN line, preceded and followed by a blank line.
+- Each bullet point must be on its OWN line.
+- Use simple English — the patient is not a doctor.
+- Maximum 300 words.
+- Explain medical terms in simple language inside brackets like: Hemoglobin [a protein in blood that carries oxygen].
+- Never invent information. If missing, write "Not Mentioned".
+- Only mention abnormal results unless normal ones are clinically significant.
+- Maintain a calm, reassuring tone.
+- Return ONLY valid Markdown. No HTML. No triple backtick code blocks.
 
-Use this format:
+=========================
+REQUIRED STRUCTURE
+=========================
+
+# 🩺 Medical Report Summary
+
+## 👤 Patient Details
+
+- **Age:** [value or Not Mentioned]
+- **Gender:** [value or Not Mentioned]
+
+## 📄 Report Information
+
+- **Report Type:** [e.g., CBC Blood Test]
+- **Purpose:** [why this test was done]
+
+## 🔍 Key Findings
+
+- **[Finding Name]**
+  [One sentence explanation in plain English]
+
+## ⚠️ Important Concerns
+
+[Only mention serious or unusual findings. If none, write: No major concerns detected.]
+
+## 🩺 Overall Summary
+
+[2–3 simple sentences summarizing the patient's overall condition.]
+
+## ✅ Recommended Next Steps
+
+- [Action 1]
+- [Action 2]
+- [Action 3]
 
 ---
-
-### 👤 Patient Details
-
-* Age:
-* Gender:
-
-### 📄 Scan Details
-
-* Type of Scan:
-* Purpose:
-
-### 🔍 Key Findings (Explained Simply)
-
-* Write 3 to 5 important findings from the report.
-* Do NOT use "Finding 1, 2, 3".
-* Each finding must:
-  * Start with a short, meaningful title (example: "Bone Loss in Gums")
-  * Follow with a simple explanation in 1–2 lines
-  * Explain any medical terms in brackets
-* Focus only on the most important and relevant issues.
-
-### ⚠️ Important Concerns
-
-* Mention serious issues or things needing attention
-
-### 🩺 What This Means
-
-* Explain overall condition in 2–3 simple lines
-
-### ✅ What To Do Next
-
-* Clear next steps (consult doctor, further tests, etc.)
-
-### ⚠️ Disclaimer
-
-This is an AI-generated summary and not a medical diagnosis. Please consult a doctor for proper advice.
-
----
-
-Now generate the summary based on the provided medical report.
+Now analyze the uploaded medical report and generate the summary strictly following the above format.
 `,
             },
           ],
@@ -298,24 +308,36 @@ Now generate the summary based on the provided medical report.
       ],
     });
 
-    // ✅ 4. Extract response (NEW SDK)
-    const aiResponse = result.text;
+    // ── 7. Extract text safely ──────────────────────────────
+    // Try multiple access patterns depending on SDK version
+    const aiResponse =
+      result?.text ||                                              // some SDK versions
+      result?.candidates?.[0]?.content?.parts?.[0]?.text ||      // standard
+      result?.response?.text?.();                                 // older pattern
 
-    // ✅ 5. Save to DB
+    if (!aiResponse) {
+      console.error("❌ Gemini returned empty/null response:", JSON.stringify(result, null, 2));
+      return res.status(500).json({ message: "AI returned an empty response." });
+    }
+
+    console.log("✅ AI Summary generated, length:", aiResponse.length);
+
+    // ── 8. Cache and save ───────────────────────────────────
     record.aiSummary = {
       text: aiResponse,
       generatedAt: new Date(),
     };
-
     await record.save();
 
-    // ✅ 6. Send response
-    res.json({ summary: aiResponse });
+    return res.json({ summary: aiResponse });
 
   } catch (error) {
-    console.error("AI ERROR:", error);
-    res.status(500).json({
-      message: "AI summary failed",
+    // ── 9. Detailed error logging ───────────────────────────
+    console.error("❌ AI SUMMARY ERROR:", error.message);
+    console.error("Stack:", error.stack);
+
+    return res.status(500).json({
+      message: "Failed to generate AI summary.",
       error: error.message,
     });
   }

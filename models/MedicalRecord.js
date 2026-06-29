@@ -36,6 +36,10 @@ const medicalRecordSchema = new mongoose.Schema(
     // fileUrl: String,
     fileName: String, 
     fileType: String, 
+    aiSummary: {
+  text: String,
+  generatedAt: Date,
+}
   },
   { timestamps: true },
 );

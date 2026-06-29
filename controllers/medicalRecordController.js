@@ -2,6 +2,8 @@ import MedicalRecord from "../models/MedicalRecord.js";
 import Patient from "../models/Patient.js";
 import { sendNotification } from "../utils/sendNotification.js";
 import { notificationMessages } from "../utils/notificationMessages.js";
+import genAI from "../utils/gemini.js";
+import axios from "axios";
 
 export const createRecord = async (req, res) => {
   try {
@@ -190,5 +192,131 @@ export const getMyRecords = async (req, res) => {
   } catch (error) {
     console.log("GET MY RECORDS ERROR:", error); // 🔥 IMPORTANT
     res.status(500).json({ message: error.message });
+  }
+};
+export const generateSummary = async (req, res) => {
+  try {
+    const { recordId } = req.params;
+
+    const record = await MedicalRecord.findById(recordId);
+
+    if (!record) {
+      return res.status(404).json({ message: "Record not found" });
+    }
+
+    // ✅ Return cached summary if exists
+    if (record.aiSummary?.text) {
+      return res.json({ summary: record.aiSummary.text });
+    }
+
+    // ✅ 1. Fetch image from Cloudinary
+    const imageResponse = await axios.get(record.fileUrl, {
+      responseType: "arraybuffer",
+    });
+
+    const base64Image = Buffer.from(imageResponse.data).toString("base64");
+
+    // ✅ 2. Detect MIME type
+    const mimeType = record.fileName.toLowerCase().endsWith(".png")
+      ? "image/png"
+      : "image/jpeg";
+
+    // ✅ 3. Call Gemini (NEW SDK)
+    const result = await genAI.models.generateContent({
+      model: "gemini-flash-lite-latest",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                data: base64Image,
+                mimeType: mimeType,
+              },
+            },
+            {
+              text: `You are a medical assistant AI. Your task is to read a medical report, scan or prescription and generate a clear, simple, and well-structured summary for a non-medical person.
+
+Follow these rules strictly:
+
+1. Use very simple language (avoid complex medical terms, or explain them in brackets).
+2. Keep the summary short, clean, and easy to read.
+3. Format the output in clear sections using headings and bullet points.
+4. Highlight important findings and risks clearly.
+5. Do NOT include unnecessary technical jargon.
+6. Add brief explanations wherever medical terms are used.
+7. End with clear advice on what the patient should do next.
+8. Keep a calm and helpful tone.
+
+Use this format:
+
+---
+
+### 👤 Patient Details
+
+* Age:
+* Gender:
+
+### 📄 Scan Details
+
+* Type of Scan:
+* Purpose:
+
+### 🔍 Key Findings (Explained Simply)
+
+* Write 3 to 5 important findings from the report.
+* Do NOT use "Finding 1, 2, 3".
+* Each finding must:
+  * Start with a short, meaningful title (example: "Bone Loss in Gums")
+  * Follow with a simple explanation in 1–2 lines
+  * Explain any medical terms in brackets
+* Focus only on the most important and relevant issues.
+
+### ⚠️ Important Concerns
+
+* Mention serious issues or things needing attention
+
+### 🩺 What This Means
+
+* Explain overall condition in 2–3 simple lines
+
+### ✅ What To Do Next
+
+* Clear next steps (consult doctor, further tests, etc.)
+
+### ⚠️ Disclaimer
+
+This is an AI-generated summary and not a medical diagnosis. Please consult a doctor for proper advice.
+
+---
+
+Now generate the summary based on the provided medical report.
+`,
+            },
+          ],
+        },
+      ],
+    });
+
+    // ✅ 4. Extract response (NEW SDK)
+    const aiResponse = result.text;
+
+    // ✅ 5. Save to DB
+    record.aiSummary = {
+      text: aiResponse,
+      generatedAt: new Date(),
+    };
+
+    await record.save();
+
+    // ✅ 6. Send response
+    res.json({ summary: aiResponse });
+
+  } catch (error) {
+    console.error("AI ERROR:", error);
+    res.status(500).json({
+      message: "AI summary failed",
+      error: error.message,
+    });
   }
 };

@@ -6,6 +6,7 @@ import {
   deleteRecord,
   getDoctorPatients,
   getMyRecords,
+  generateSummary,
 } from "../controllers/medicalRecordController.js";
 
 import { upload } from "../middleware/upload.js";
@@ -26,4 +27,6 @@ router.get("/patients", protect, getDoctorPatients);
 router.get("/:id", protect, getRecordById);
 
 router.delete("/deleteRecord/:id", protect, deleteRecord);
+
+router.post("/generate-summary/:recordId", protect, generateSummary);
 export default router;
